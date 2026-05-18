@@ -1,4 +1,4 @@
-#' @name check_sd0002
+#' @name check_sd0056
 #'
 #' @title check required variables
 #'
@@ -13,9 +13,7 @@
 #'
 #' @import dplyr
 #' @importFrom logger log_info
-#'
-#' @export
-#'
+
 #' @examples check_sd0056(ae)
 #' # minimal reproducible example
 #' \dontrun{

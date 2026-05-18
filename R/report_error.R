@@ -20,8 +20,6 @@
 #' @import dplyr
 #' @importFrom logger log_info
 #'
-#' @export
-#'
 #' @examples
 #' # minimal reproducible example
 #'

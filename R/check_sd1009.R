@@ -15,8 +15,6 @@
 #' @import dplyr
 #' @importFrom logger log_info
 #'
-#' @export
-#'
 #' @examples check_sd1009(ta)
 #' # minimal reproducible example
 #' \dontrun{

@@ -14,8 +14,6 @@
 #' @import dplyr
 #' @importFrom logger log_info
 #'
-#' @export
-#'
 #' @examples check_sd0002(ae)
 #' # minimal reproducible example
 #' \dontrun{

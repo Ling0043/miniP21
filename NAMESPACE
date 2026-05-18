@@ -2,6 +2,7 @@
 
 export(check_sd0002)
 export(check_sd0055)
+export(check_sd0056)
 export(check_sd1009)
 export(check_sd1064)
 export(fct_get_rules)
