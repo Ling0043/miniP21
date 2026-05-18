@@ -17,6 +17,8 @@ LazyData: true
 Config/roxygen2/version: 8.0.0
 Imports: 
     dplyr,
+    DT,
+    knitr,
     logger,
     stringr
 URL: https://github.com/Ling0043/miniP21
