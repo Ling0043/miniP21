@@ -4,7 +4,7 @@ This is a R tool to check SDTM datasets
 
 ## Usage
 
-Pass an SDTM dataset (e.g., ta, te, ts, etc.) to the  **`fct_validate_sdtm(df)`** function.
+Input an SDTM dataset (e.g., ta, te, ts, etc.) to the  **`fct_validate_sdtm(df)`** function.
 
 > e.g. fct_validate_sdtm(ta)
 
