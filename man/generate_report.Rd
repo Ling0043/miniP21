@@ -7,9 +7,11 @@
 generate_report(report_df, domain_name, output_dir = getwd())
 }
 \arguments{
-\item{df}{a data.frame of all errors detail}
+\item{report_df}{a data.frame of all errors detail}
 
-\item{the}{domain of the dataset}
+\item{domain_name}{the domain of the dataset}
+
+\item{output_dir}{the directory to save the report, default is current working directory}
 }
 \value{
 a html report

@@ -2,3 +2,5 @@
 ^renv\.lock$
 ^miniP21\.Rproj$
 ^\.Rproj\.user$
+^LICENSE\.md$
+^testfile\.R$

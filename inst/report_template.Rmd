@@ -47,7 +47,8 @@ if (!is.null(df) && nrow(df) > 0) {
 
   knitr::kable(summary_df, format = "markdown")
 } else {
-  cat("### No errors were found！")
+  cat("✨ No errors were found！✨")
+  knitr::knit_exit()
 }
 ```
 

@@ -13,12 +13,6 @@
 #'
 #' @import dplyr
 #' @importFrom logger log_info
-#'
-#' @examples check_sd0002(ae)
-#' # minimal reproducible example
-#' \dontrun{
-#'   result <- check_sd0002(ae)
-#' }
 
 # =============================================================================
 # Modification History

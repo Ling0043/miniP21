@@ -16,9 +16,28 @@
 #'
 #' @export
 #'
-#' @examples fct_validate_sdtm(ta)
+#' @examples
 #' # minimal reproducible example
 #' \dontrun{
+#'   ta <- data.frame(
+#'   Row = 1:6,
+#'  STUDYID = c("EX7", "EX7", "EX7", "EX7", "EX7", "EX7"),
+#'   DOMAIN = c("TA", "TA", "TA", "TA", "TA", "TA"),
+#'   ARMCD = c(1, 1, 1, 1, 1, 1),
+#'   ARM = c("CR", "CR", NA, "CR", "", "CR"),
+#'   TAETORD = as.character(1:6),
+#'   ETCD = c("SCRN", "ICR", "CRNS", "C", "C", "FU"),
+#'   ELEMENT = c("Screen", "Initial Chemo + RT",
+#'               "Chemo+RT (non-Surgery)", "Chemo",
+#'               "Chemo", "Off Treatment Follow-up"),
+#'   TABRANCH = c("Randomized to CR", "", "",
+#'                "", "", ""),
+#'   TATRANS = c("", "", "If progression, skip to Follow-up.",
+#'               "", "", ""),
+#'   EPOCH = c("SCREENING", "INDUCTION TREATMENT",
+#'             "INDUCTION TREATMENT", "CONTINUATION TREATMENT",
+#'             "CONTINUATION TREATMENT", "FOLLOW-UP")
+#' )
 #'   fct_validate_sdtm(ta)
 #' }
 
@@ -32,6 +51,10 @@
 #
 # =============================================================================
 
+# Library imports ----
+library(dplyr)
+library(logger)
+
 fct_validate_sdtm <- function(df) {
   #  # 1. Logging start ----
   # logger::log_info("[check_sd0002] Start")
@@ -39,6 +62,10 @@ fct_validate_sdtm <- function(df) {
   # 2. Input validation ----
   if (!is.data.frame(df)) {
     stop("ERROR: 'data' must be a data frame.")
+  }
+
+  if (nrow(df) == 0) {
+    stop("ERROR: Dataset must have at least one record.")
   }
 
   if (!"DOMAIN" %in% names(df)) {

@@ -1,8 +1,9 @@
-#' @name check_sd1009
+#' @name check_sd1004
 #'
 #' @title check variable length
 #'
-#' @description SD1009:The value of Element Code (ETCD) should be no more than 8 characters in length.
+#' @description SD1004: The value of Planned Arm Code (ARMCD)
+#'     should be no more than 20 characters in length.
 #'
 #' @param df domain dataset to check
 #' @param domain_name the domain of the dataset
@@ -19,18 +20,23 @@
 #
 # Version  Date        Modified by             Modification(s)
 # -------  ----------  ----------------------  -------------------------------
-# 1.0      2026-05-10  Author Name             Initial version
+# 1.0      2026-05-19  Author Name             Initial version
 #
 # =============================================================================
 
-check_sd1009 <- function(df, domain_name) {
-# use check_length to check the length of ARMCD variable
-result <- check_length(
-  df = df,
-  domain_name = domain_name,
-  rule_id = "SD1009",
-  variable_name = "ETCD",
-  length_limit = 8
-)
-return(result)
+# 1. Library imports ----
+library(dplyr)
+library(logger)
+
+# 2. Main function(s) ----
+check_sd1004 <- function(df, domain_name) {
+  # use check_length to check the length of ARMCD variable
+  result <- check_length(
+    df = df,
+    domain_name = domain_name,
+    rule_id = "SD1004",
+    variable_name = "ARMCD",
+    length_limit = 20
+  )
+  return(result)
 }

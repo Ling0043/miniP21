@@ -18,13 +18,6 @@ rule code, check status, error detail, row number of the error
 SD1064: The value of Element Code (ETCD) variable
 must be unique within Trial Elements (TE) domain.
 }
-\examples{
-check_sd1064(ta)
-# minimal reproducible example
-\dontrun{
-  result <- check_sd1064(ta)
-}
-}
 \author{
 Zhu Xiuling
 }

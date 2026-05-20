@@ -18,13 +18,6 @@ rule code, check status, error detail, row number of the error
 SD0055: Variable Data Types in the dataset should
 match the variable data types described in SDTM.
 }
-\examples{
-check_sd0055(ta)
-# minimal reproducible example
-\dontrun{
-  result <- check_sd0055(ta)
-}
-}
 \author{
 Zhu Xiuling
 }

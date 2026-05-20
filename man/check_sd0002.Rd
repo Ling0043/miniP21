@@ -15,13 +15,6 @@ rule code, check status, error detail, row number of the error
 SD0002: Required variables (where Core attribute is 'Req')
 cannot be null for any records.
 }
-\examples{
-check_sd0002(ae)
-# minimal reproducible example
-\dontrun{
-  result <- check_sd0002(ae)
-}
-}
 \author{
 Zhu Xiuling
 }

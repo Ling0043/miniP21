@@ -4,7 +4,7 @@
 \alias{fct_get_rules}
 \title{get the rule from P21}
 \arguments{
-\item{df}{domain dataset to check}
+\item{domain_name}{the name of the domain dataset, should be a character of two uppercase letters}
 }
 \value{
 rule code
@@ -12,13 +12,6 @@ rule code
 \description{
 Extract the relevant rules from Pinnacle 21
 based on the provided dataset
-}
-\examples{
-get_rules(ta)
-# minimal reproducible example
-\dontrun{
-  result <- get_rules(ta)
-}
 }
 \author{
 Zhu Xiuling

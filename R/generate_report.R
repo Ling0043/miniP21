@@ -5,16 +5,16 @@
 #' @description SD0002: Required variables (where Core attribute is 'Req')
 #'     cannot be null for any records.
 #'
-#' @param df a data.frame of all errors detail
-#' @param the domain of the dataset
+#' @param report_df a data.frame of all errors detail
+#' @param domain_name the domain of the dataset
+#' @param output_dir the directory to save the report, default is current working directory
+#' 
 #' @return a html report
 #'
 #' @author Zhu Xiuling
 #'
 #' @import dplyr
 #' @importFrom logger log_info
-#'
-#' @export
 
 # =============================================================================
 # Modification History
@@ -57,7 +57,7 @@ generate_report <- function(report_df, domain_name, output_dir = getwd()) {
   message(sprintf("The report has been generated! Saved to: %s", output_path))
 
   if (interactive()) {
-    browseURL(output_path)
+    utils::browseURL(output_path)
   }
   return(invisible(output_path))
 }

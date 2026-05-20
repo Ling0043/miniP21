@@ -2,28 +2,20 @@
 % Please edit documentation in R/check_sd1009.R
 \name{check_sd1009}
 \alias{check_sd1009}
-\title{check invalide ETCD value}
+\title{check variable length}
 \usage{
 check_sd1009(df, domain_name)
 }
 \arguments{
 \item{df}{domain dataset to check}
 
-\item{domain_name}{this is an empty parameter}
+\item{domain_name}{the domain of the dataset}
 }
 \value{
 rule code, check status, error detail, row number of the error
 }
 \description{
-SD1009: The value of Element Code (ETCD) should be
-no more than 8 characters in length.
-}
-\examples{
-check_sd1009(ta)
-# minimal reproducible example
-\dontrun{
-  result <- check_sd1009(ta)
-}
+SD1009:The value of Element Code (ETCD) should be no more than 8 characters in length.
 }
 \author{
 Zhu Xiuling

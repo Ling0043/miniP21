@@ -5,7 +5,7 @@
 #' @description Extract the relevant rules from Pinnacle 21
 #'     based on the provided dataset
 #'
-#' @param df domain dataset to check
+#' @param domain_name the name of the domain dataset, should be a character of two uppercase letters
 #'
 #' @return rule code
 #'
@@ -13,14 +13,6 @@
 #'
 #' @import dplyr stringr
 #' @importFrom logger log_info
-#'
-#' @export
-#'
-#' @examples get_rules(ta)
-#' # minimal reproducible example
-#' \dontrun{
-#'   result <- get_rules(ta)
-#' }
 
 # =============================================================================
 # Modification History

@@ -19,14 +19,6 @@
 #'
 #' @import dplyr
 #' @importFrom logger log_info
-#'
-#' @examples
-#' # minimal reproducible example
-#'
-#' \dontrun{
-#'   result <- report_error(row_number, variable_name, rule_id, error_message)
-#' }
-
 
 # =============================================================================
 # Modification History
