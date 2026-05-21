@@ -2,6 +2,14 @@
 
 This is a R tool to check SDTM datasets
 
+## Installation
+To get a bug fix or to use a feature from the development version, you can install the development version of dplyr from GitHub.
+
+
+```pak::pak("Ling0043/miniP21")
+library(miniP21)
+```
+
 ## Usage
 
 Input an SDTM dataset (e.g., ta, te, ts, etc.) to the  **`fct_validate_sdtm(df)`** function.
