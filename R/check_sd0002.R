@@ -44,7 +44,8 @@ check_sd0002 <- function(df, domain_name) {
   req_vars <- req_meta$variable_name
   # if this domain have no "Req" variable, then end function
   if (length(req_vars) == 0) {
-    return(report_error("-", "Pass", "SD0002", "No Required variables defined for this domain."))
+    # return(report_error("-", "Pass", "SD0002", "No Required variables defined for this domain."))
+    return(NULL)
   }
   vars_to_check <- intersect(req_vars, names(df))
 

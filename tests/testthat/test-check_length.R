@@ -78,7 +78,7 @@ test_that("check_length return 1 error",{
     Row = c("5"),
     Variable = c("ARMCD"),
     Rule_ID = c("SD1004"),
-    Message = c("The value of 'ARMCD' should be <= 20 characters in length."),
+    Message = c("The value of 'ARMCD' should be <= 20 characters in length. But actual value is 'Pooooooooooooooooooooooo'"),
     stringsAsFactors = FALSE
   )
 
@@ -120,7 +120,7 @@ test_that("check_length return 1 error",{
     Row = c("3"),
     Variable = c("ETCD"),
     Rule_ID = c("SD1009"),
-    Message = c("The value of 'ETCD' should be <= 8 characters in length."),
+    Message = c("The value of 'ETCD' should be <= 8 characters in length. But actual value is 'Placebo11'"),
     stringsAsFactors = FALSE
   )
 

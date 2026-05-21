@@ -42,12 +42,14 @@ check_length <- function(df, domain_name, rule_id, variable_name, length_limit) 
 
   all_errors <- list()
   for (idx in err_idx) {
+    actual_value <- target_variable_values[idx]
+
     all_errors[[length(all_errors) + 1]] <- report_error(
       row_number = as.character(idx),
       variable_name = variable_name,
       rule_id = rule_id,
-      error_message = sprintf("The value of '%s' should be <= %d characters in length.", 
-                              variable_name, length_limit)
+      error_message = sprintf("The value of '%s' should be <= %d characters in length. But actual value is '%s'", 
+                              variable_name, length_limit, actual_value)
     )
   }
 

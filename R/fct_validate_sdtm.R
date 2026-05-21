@@ -94,15 +94,21 @@ fct_validate_sdtm <- function(df) {
   # 4. Core logic ----
   all_results <- list()
   for (rule_code in rules_to_check) {
-    func_name <- paste0("check_", tolower(rule_code))
 
-    if (!exists(func_name, mode = "function")) {
+    pkg_env <- asNamespace("miniP21")
+    func_name <- paste0("check_", tolower(rule_code))
+   
+    if (!exists(func_name,
+             mode = "function",
+             envir = pkg_env)) {
       message(sprintf("[-] Skip: Function '%s' is not implemented yet.", func_name))
       next
     }
     message(sprintf("[+] Running check: %s...", rule_code))
 
-    check_func <- match.fun(func_name)
+    check_func <- get(func_name,
+                  mode = "function",
+                  envir = pkg_env)
     res <- tryCatch({
       check_func(df = df, domain_name = domain_name)
     }, error = function(e) {
