@@ -6,7 +6,8 @@ This is a R tool to check SDTM datasets
 To get a bug fix or to use a feature from the development version, you can install the development version of dplyr from GitHub.
 
 
-```pak::pak("Ling0043/miniP21")
+```
+pak::pak("Ling0043/miniP21")
 library(miniP21)
 ```
 
