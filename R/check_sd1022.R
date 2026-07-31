@@ -7,7 +7,7 @@
 #'     and cannot contain characters other than letters in upper case, numbers, or underscores.
 #'
 #' @param df domain dataset to check
-#' @param domain_name the domain of the dataset
+#' @param ... Additional arguments (currently unused).
 #' @return rule code, check status, error detail, row number of the error
 #'
 #' @author Zhu Xiuling
@@ -21,11 +21,11 @@
 #
 # Version  Date        Modified by             Modification(s)
 # -------  ----------  ----------------------  -------------------------------
-# 1.0      2026-05-19  Author Name             Initial version
+# 1.0      2026-05-19  Zhu Xiuling             Initial version
 #
 # =============================================================================
 
-check_sd1022 <- function(df, domain_name) {
+check_sd1022 <- function(df, ...) {
 
   qnam_values <- as.character(df$QNAM)
   is_blank <- is.na(qnam_values) | trimws(qnam_values) == ""
@@ -55,6 +55,7 @@ check_sd1022 <- function(df, domain_name) {
     all_errors[[length(all_errors) + 1]] <- report_error(
       row_number = as.character(idx),
       variable_name = "QNAM",
+      original_value = val,
       rule_id = "SD1022",
       error_message = msg
     )

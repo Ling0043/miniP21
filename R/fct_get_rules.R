@@ -58,5 +58,5 @@ fct_get_rules <- function(domain_name) {
         )
     )
 
-  return(rule_df$code)
+  return(rule_df)
 }

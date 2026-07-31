@@ -47,8 +47,8 @@
 #
 # Version  Date        Modified by             Modification(s)
 # -------  ----------  ----------------------  -------------------------------
-# 1.0      2026-05-10  Author Name             Initial version
-#
+# 1.0      2026-05-10  Zhu Xiuling             Initial version
+# 1.1      2026-06-05  Zhu Xiuling             Update the structure
 # =============================================================================
 
 # Library imports ----
@@ -82,47 +82,87 @@ fct_validate_sdtm <- function(df) {
     stop("ERROR: DOMAIN variable should be consistent with the name of the dataset.")
   }
 
+  # create a row number column for df
+  df <- df %>%
+    mutate(rownumber_new = row_number())
+
   # 3. Pre-processing ----
-  rules_to_check <- fct_get_rules(domain_name = domain_name)
+  rules_df <- fct_get_rules(domain_name = domain_name)
 
   # if there are no rules for this domain then return null
-  if (length(rules_to_check) == 0) {
+  if (is.null(rules_df) || nrow(rules_df) == 0) {
     message(sprintf("No rules found for domain: %s", domain_name))
     return(NULL)
   }
 
   # 4. Core logic ----
   all_results <- list()
-  for (rule_code in rules_to_check) {
+  pkg_env <- asNamespace("miniP21")
 
-    pkg_env <- asNamespace("miniP21")
-    func_name <- paste0("check_", tolower(rule_code))
-   
-    if (!exists(func_name,
-             mode = "function",
-             envir = pkg_env)) {
-      message(sprintf("[-] Skip: Function '%s' is not implemented yet.", func_name))
+  for (i in seq_len(nrow(rules_df))) {
+    rule_id     <- rules_df$code[i]
+    func_name   <- rules_df$coreFunction[i]
+    target_vars <- rules_df$targetVariable[i]
+    rule_params <- rules_df$ruleParams[i]
+
+    # chech function name is not NA or empty
+    if (is.na(func_name) || func_name == "") {
+      message(sprintf("[-] Skip: Core function not defined for rule '%s'.", rule_id))
       next
     }
-    message(sprintf("[+] Running check: %s...", rule_code))
 
-    check_func <- get(func_name,
-                  mode = "function",
-                  envir = pkg_env)
+    # check function exists in the package environment
+    if (!exists(func_name, mode = "function", envir = pkg_env)) {
+      message(sprintf("[-] Skip: Function '%s' for rule '%s' is not implemented yet.", func_name, rule_id))
+      next
+    }
+
+    if (!is.na(target_vars) && trimws(target_vars) != "") {
+          target_vars_vec <- trimws(unlist(strsplit(as.character(target_vars), split = ",")))
+        } else {
+          target_vars_vec <- NULL
+        }
+    # basic parameters
+    args_list <- list(
+          df = df,
+          domain_name = domain_name,
+          target_vars = target_vars_vec,
+          rule_id = rule_id
+        )
+    
+    # If rule_params is not NA or empty, parse it and add to args_list
+    if (!is.na(rule_params) && trimws(rule_params) != "") {
+      specific_args <- tryCatch({
+        jsonlite::fromJSON(rule_params)
+      }, error = function(e) {
+        warning(sprintf("Failed to parse ruleParams for %s: %s", rule_id, e$message))
+      })
+
+      args_list <- c(args_list, specific_args)
+    }
+
+    # --- runing code ---    
+    check_func <- get(func_name, mode = "function", envir = pkg_env)
+
     res <- tryCatch({
-      check_func(df = df, domain_name = domain_name)
+      do.call(check_func, args_list)
     }, error = function(e) {
-      warning(sprintf("Error executing %s: %s", func_name, e$message))
+      warning(sprintf("Error executing %s for %s: %s", func_name, rule_id, e$message))
       return(NULL)
     })
-
-
+    
     if (!is.null(res) && is.data.frame(res) && nrow(res) > 0) {
-      all_results[[rule_code]] <- res
+      all_results[[rule_id]] <- res
     }
   }
 
-  final_report <- bind_rows(all_results)
+  # Combine and Report ----
+  if (length(all_results) == 0) {
+    message(sprintf("All checks passed for domain: %s. No errors found.", domain_name))
+    return(NULL)
+  }
+
+  final_report <- dplyr::bind_rows(all_results)
 
   generate_report(report_df = final_report, domain_name = domain_name)
 }

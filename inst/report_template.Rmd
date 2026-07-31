@@ -67,7 +67,7 @@ if (!is.null(df) && nrow(df) > 0) {
       autoWidth = TRUE,
       dom = 'Bfrtip'
     ),
-    colnames = c("Row", "Variable", "Rule ID", "Message")
+    colnames = c("Row", "Variable","Original Value", "Rule ID", "Message")
   ) %>%
     formatStyle('Row', backgroundColor = '#f9f9f9')
 }

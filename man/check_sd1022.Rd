@@ -4,12 +4,12 @@
 \alias{check_sd1022}
 \title{check variable length}
 \usage{
-check_sd1022(df, domain_name)
+check_sd1022(df, ...)
 }
 \arguments{
 \item{df}{domain dataset to check}
 
-\item{domain_name}{the domain of the dataset}
+\item{...}{Additional arguments (currently unused).}
 }
 \value{
 rule code, check status, error detail, row number of the error

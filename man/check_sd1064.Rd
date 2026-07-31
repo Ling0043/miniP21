@@ -4,12 +4,12 @@
 \alias{check_sd1064}
 \title{check duplicate ETCD value}
 \usage{
-check_sd1064(df, domain_name)
+check_sd1064(df, ...)
 }
 \arguments{
 \item{df}{domain dataset to check}
 
-\item{domain_name}{this is an empty parameter}
+\item{...}{Additional arguments (currently unused).}
 }
 \value{
 rule code, check status, error detail, row number of the error

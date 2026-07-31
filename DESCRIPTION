@@ -18,6 +18,7 @@ Imports:
     dplyr,
     logger,
     rmarkdown,
-    stringr
+    stringr,
+    jsonlite
 URL: https://github.com/Ling0043/miniP21
 BugReports: https://github.com/Ling0043/miniP21/issues

@@ -4,12 +4,14 @@
 \alias{check_sd0055}
 \title{match variable types with SDTM}
 \usage{
-check_sd0055(df, domain_name)
+check_sd0055(df, domain_name, ...)
 }
 \arguments{
 \item{df}{domain dataset to check}
 
 \item{domain_name}{the domain of the dataset}
+
+\item{...}{Additional arguments (currently unused).}
 }
 \value{
 rule code, check status, error detail, row number of the error

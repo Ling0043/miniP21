@@ -3,4 +3,5 @@
 export(fct_validate_sdtm)
 import(dplyr)
 import(stringr)
+importFrom(jsonlite,fromJSON)
 importFrom(logger,log_info)

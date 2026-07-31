@@ -20,7 +20,7 @@
 #
 # Version  Date        Modified by             Modification(s)
 # -------  ----------  ----------------------  -------------------------------
-# 1.0      2026-05-10  Author Name             Initial version
+# 1.0      2026-05-10  Zhu Xiuling             Initial version
 #
 # =============================================================================
 
@@ -29,7 +29,7 @@ library(dplyr)
 library(logger)
 
 # 2. Main function(s) ----
-check_sd0002 <- function(df, domain_name) {
+check_sd0002 <- function(df, domain_name, ...) {
   #  # 1. Logging start ----
   # logger::log_info("[check_sd0002] Start")
 
@@ -61,6 +61,7 @@ check_sd0002 <- function(df, domain_name) {
         all_errors[[length(all_errors) + 1]] <- report_error(
           row_number = as.character(idx),
           variable_name = var,
+          original_value = "-",
           rule_id = "SD0002",
           error_message = sprintf("Required variable '%s' is null or empty.", var)
         )

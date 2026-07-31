@@ -4,12 +4,14 @@
 \alias{report_error}
 \title{a error per line}
 \usage{
-report_error(row_number, variable_name, rule_id, error_message)
+report_error(row_number, variable_name, original_value, rule_id, error_message)
 }
 \arguments{
 \item{row_number}{specific error row number}
 
 \item{variable_name}{specific error variable name}
+
+\item{original_value}{the original value of the error}
 
 \item{rule_id}{error rule ID}
 

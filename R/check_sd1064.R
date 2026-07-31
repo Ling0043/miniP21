@@ -6,7 +6,7 @@
 #'     must be unique within Trial Elements (TE) domain.
 #'
 #' @param df domain dataset to check
-#' @param domain_name this is an empty parameter
+#' @param ... Additional arguments (currently unused).
 #'
 #' @return rule code, check status, error detail, row number of the error
 #'
@@ -25,7 +25,7 @@
 #
 # =============================================================================
 
-check_sd1064 <- function(df, domain_name) {
+check_sd1064 <- function(df, ...) {
   #  # 1. Logging start ----
   # logger::log_info("[check_sd0055] Start")
 
@@ -41,29 +41,27 @@ check_sd1064 <- function(df, domain_name) {
 
   # 3. Pre-processing ----
   etcd_values <- as.character(df$ETCD)
-  is_blank <- is.na(etcd_values) | trimws(as.character(etcd_values)) == ""
+  is_blank <- is.na(etcd_values) | trimws(etcd_values) == ""
   non_blank_etcds <- etcd_values[!is_blank]
 
+
   # 4. Core logic ----
-  dup_values <- unique(non_blank_etcds[duplicated(non_blank_etcds)])
+  non_blank_idx <- which(!is_blank)
+  if (length(non_blank_idx) == 0) return(NULL)
 
-  all_errors <- list()
-  for (dup_val in dup_values) {
-    err_idx <- which(etcd_values == dup_val & !is_blank)
-    for (idx in err_idx) {
-      all_errors[[length(all_errors) + 1]] <- report_error(
-        row_number = as.character(idx),
-        variable_name = "ETCD",
-        rule_id = "SD1064",
-        error_message = sprintf("Duplicate ETCD value: '%s'.", dup_val)
-      )
-    }
-  }
+  non_blank_vals <- etcd_values[non_blank_idx]
+  is_dup <- duplicated(non_blank_vals) | duplicated(non_blank_vals, fromLast = TRUE)
+  dup_idx <- non_blank_idx[is_dup]
+  if (length(dup_idx) == 0) return(NULL)
 
-  # 5.Logging end ----
-  if (length(all_errors) == 0) {
-    return(NULL)
-  } else {
-    return(bind_rows(all_errors))
-  }
+  dup_vals <- etcd_values[dup_idx]
+
+  msg <- sprintf("Duplicate ETCD value: '%s'.", dup_vals)
+  report_error(
+    row_number    = as.character(dup_idx),
+    variable_name = "ETCD",
+    original_value = dup_vals,
+    rule_id       = "SD1064",
+    error_message = msg
+  )
 }

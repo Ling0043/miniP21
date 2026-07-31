@@ -4,18 +4,20 @@
 \alias{check_length}
 \title{check the value length}
 \usage{
-check_length(df, domain_name, rule_id, variable_name, length_limit)
+check_length(df, domain_name, rule_id, target_vars, length_limit, ...)
 }
 \arguments{
 \item{df}{domain dataset to check}
 
-\item{domain_name}{this is an empty parameter}
+\item{domain_name}{the domain name to check}
 
 \item{rule_id}{the rule id to check}
 
-\item{variable_name}{the variable name to check}
+\item{target_vars}{the variable name to check}
 
 \item{length_limit}{the length limit for the variable}
+
+\item{...}{Additional arguments (currently unused).}
 }
 \value{
 rule code, check status, error detail, row number of the error

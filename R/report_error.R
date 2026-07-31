@@ -10,6 +10,7 @@
 #'
 #' @param row_number specific error row number
 #' @param variable_name specific error variable name
+#' @param original_value the original value of the error
 #' @param rule_id error rule ID
 #' @param error_message the description of the error
 #'
@@ -30,10 +31,11 @@
 #
 # =============================================================================
 
-report_error <- function(row_number,  variable_name, rule_id, error_message) {
+report_error <- function(row_number, variable_name, original_value, rule_id, error_message) {
   data.frame(
     Row = row_number,
     Variable = as.character(variable_name),
+    Original_Value = as.character(original_value),
     Rule_ID = as.character(rule_id),
     Message = as.character(error_message),
     stringsAsFactors = FALSE

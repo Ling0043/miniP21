@@ -7,6 +7,7 @@
 #'
 #' @param df domain dataset to check
 #' @param domain_name the domain of the dataset
+#' @param ... Additional arguments (currently unused).
 #'
 #' @return rule code, check status, error detail, row number of the error
 #'
@@ -25,7 +26,7 @@
 #
 # =============================================================================
 
-check_sd0055 <- function(df, domain_name) {
+check_sd0055 <- function(df, domain_name, ...) {
   #  # 1. Logging start ----
   # logger::log_info("[check_sd0055] Start")
 
@@ -63,6 +64,7 @@ check_sd0055 <- function(df, domain_name) {
       all_errors[[length(all_errors) + 1]] <- report_error(
         row_number = "-",
         variable_name = var,
+        original_value = "-",
         rule_id = "SD0055",
         error_message = sprintf("Type mismatch: Expected '%s', but '%s' in dataframe.",
                                 expected_type, actual_class)
