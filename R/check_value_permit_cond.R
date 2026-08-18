@@ -1,19 +1,16 @@
-#' @name check_expected_cond
-#' @title Check variable value consistency based on conditions
-#' @description Validates that a target variable equals a specific value 
-#' (or is in a set of values) when specified conditions are met.
-#' 
+#' @name check_value_permit_cond
+#' @title Check if variable values are in a valid set
+#' @description Validates that target variable values belong to a specific set 
+#' of allowed values, optionally triggered by condition variables.
 #' Supports wildcard '--' resolution and vectorized condition logic.
-#' Applicable to rules: SD0042, SD0023, SD0090, SD0091, SD1045, SD1046, 
-#' SD1062, SD1249, SD1314, SD2004, SD2240, SD2241, SD2242, SD2243, 
-#' SD2256, SD2266, SD2244.
+#' Applicable to rules: SD1128, SD1223, SD1295, SD1296.
 #'
 #' @param df Data frame to check.
 #' @param domain_name The domain of the dataset.
 #' @param target_vars Character vector of variables to validate.
 #' @param rule_id The rule ID being checked.
-#' @param expected_values Character string, comma-separated list of allowed 
-#' values for the target variable (e.g., "Y" or "GENC,ISO 3166-1 alpha-3").
+#' @param valid_values Character string, comma-separated list of allowed 
+#' values (e.g., "Y,N" or "ONE,MANY").
 #' @param cond_vars Character vector. Names of the condition columns.
 #' @param cond_ops Character vector. Operators: "non_missing", "missing", 
 #'   "equal", "not_in", "not_equal".
@@ -32,7 +29,7 @@
 #
 # Version  Date        Modified by             Modification(s)
 # -------  ----------  ----------------------  -------------------------------
-# 1.0      2026-07-08  Zhu Xiuling             Initial version
+# 1.0      2026-08-17  Zhu Xiuling             Initial version
 #
 # ==============================================================================
 
@@ -40,10 +37,10 @@
 library(dplyr)
 library(logger)
 
-check_expected_cond <- function(df, domain_name, target_vars, rule_id,
-                             expected_values,
-                             cond_vars = NULL, cond_ops = NULL, cond_vals = NULL,
-                             logic_op = "AND", ...) {
+check_value_permit_cond <- function(df, domain_name, target_vars, rule_id, 
+                               valid_values,
+                               cond_vars = NULL, cond_ops = NULL, cond_vals = NULL,
+                               logic_op = "AND", ...) {
   
   # 1. Pre-processing ----
   # Resolve wildcards
@@ -63,8 +60,8 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
     return(NULL)
   }
   
-  # Parse expected values
-  expected_set <- trimws(unlist(strsplit(expected_values, ",", fixed = TRUE)))
+  # Parse valid values
+  allowed_set <- trimws(unlist(strsplit(valid_values, ",", fixed = TRUE)))
   
   # 2. Build condition indices ----
   if (!is.null(actual_cond_vars) && length(actual_cond_vars) > 0) {
@@ -107,23 +104,18 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
   if (!any(combined_idx)) return(NULL)
   
   # 3. Core logic: Value Validation ----
+  # Check only existing target variables
   existing_target_vars <- actual_target_vars[actual_target_vars %in% names(df)]
   if (length(existing_target_vars) == 0) return(NULL)
   
   err_list <- lapply(existing_target_vars, function(v) {
     vals <- df[[v]]
     
-    # Convert to character for consistent comparison
-    vals_char <- as.character(vals)
+    # Errors: Condition met, value is populated, but NOT in allowed set
+    is_populated <- !is.na(vals) & trimws(as.character(vals)) != ""
+    is_invalid   <- !vals %in% allowed_set
     
-    # Errors: Condition met, value is populated, but NOT in expected set
-    is_populated <- !is.na(vals) & trimws(vals_char) != ""
-    is_invalid   <- !vals_char %in% expected_set
-    
-    # Note: If value is missing, it is technically not equal to expected 'Y' or specific value.
-    # Usually these rules imply the variable must be populated with that value.
-    # So missing values are also errors.
-    err_mask <- combined_idx & is_invalid
+    err_mask <- combined_idx & is_populated & is_invalid
     
     if (any(err_mask)) {
       data.frame(
@@ -140,6 +132,7 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
   
   # 4. Error Reporting ----
   if (nrow(err_df) > 0) {
+    row_number_str <- paste(unique(err_df$row_idx), collapse = ", ")
     variable_name_str <- paste(unique(err_df$var_name), collapse = ", ")
     
     # Build human-readable condition description
@@ -171,17 +164,17 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
       connector <- if (logic_op == "OR") " or " else " and "
       cond_str <- paste(cond_descs, collapse = connector)
       
-      error_msg <- sprintf("Value of %s must be '%s' when %s.", 
-                           variable_name_str, expected_values, cond_str)
+      error_msg <- sprintf("Invalid value for %s when %s. Expected values are: '%s'.", 
+                           variable_name_str, cond_str, valid_values)
     } else {
-      error_msg <- sprintf("Value of %s must be '%s'.", 
-                           variable_name_str, expected_values)
+      error_msg <- sprintf("Invalid value for %s. Expected values are: '%s'.", 
+                           variable_name_str, valid_values)
     }
     
     report_df <- report_error(
-      row_number     = as.character(err_df$row_idx),
+      row_number     = row_number_str,
       variable_name  = variable_name_str,
-      original_value = as.character(err_df$orig_val),
+      original_value = "",
       rule_id        = rule_id,
       error_message  = error_msg
     )

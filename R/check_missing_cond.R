@@ -58,19 +58,22 @@
 #
 # =============================================================================
 
-check_missing_cond <- function(df, domain_name, target_vars, cond_vars, cond_ops, cond_vals,
+check_missing_cond <- function(df, domain_name, target_vars, cond_vars = NULL, cond_ops = NULL, cond_vals = NULL,
                                logic_op = "AND", rule_id, ...) {
   # ---- Existence checks ----
   if (any(grepl("^--", target_vars))) {
     target_vars <- paste0(domain_name, gsub("^--", "", target_vars))
+  }
+  if (!is.null(cond_vars) && any(grepl("^--", cond_vars))) {
     cond_vars <- paste0(domain_name, gsub("^--", "", cond_vars))
   }
-
-  if (!all(cond_vars %in% names(df)) || !target_vars %in% names(df)) {
-    return(NULL)
-  }
+  
+  # ---- Existence checks ----
+  if (!target_vars %in% names(df)) return(NULL)
+  if (!is.null(cond_vars) && !all(cond_vars %in% names(df))) return(NULL)
 
   # ---- Build condition indices ----
+  if (!is.null(cond_vars) && length(cond_vars) > 0) {
   idx_list <- mapply(
     function(var, op, val) {
       x <- df[[var]]
@@ -119,19 +122,6 @@ check_missing_cond <- function(df, domain_name, target_vars, cond_vars, cond_ops
     combined_idx <- Reduce(`&`, idx_list)
   }
 
-  if (!any(combined_idx)) {
-    return(NULL)
-  }
-
-  # ---- Check that target variable is NOT missing ----
-  target_vals <- df[[target_vars]][combined_idx]
-  is_missing <- is.na(target_vals) | as.character(target_vals) == ""
-  error_positions <- which(is_missing)
-
-  if (length(error_positions) == 0) {
-    return(NULL)
-  }
-
   # ---- Build human‑readable condition description ----
   cond_descs <- mapply(
     function(var, op, val) {
@@ -162,12 +152,27 @@ check_missing_cond <- function(df, domain_name, target_vars, cond_vars, cond_ops
     USE.NAMES = FALSE
   )
 
-  connector <- if (logic_op == "OR") " or " else " and "
-  cond_str <- paste(cond_descs, collapse = connector)
+    connector <- if (logic_op == "OR") " or " else " and "
+    cond_str <- paste(cond_descs, collapse = connector)
+  } else {
+    combined_idx <- rep(TRUE, nrow(df))
+    cond_str <- NULL
+  }
 
-  error_message <- sprintf("Value for %s must not be null when %s",
-                           target_vars, cond_str)
+  if (!any(combined_idx)) return(NULL)
+  
+  # ---- Check target missing ----
+  target_vals <- df[[target_vars]][combined_idx]
+  is_missing <- is.na(target_vals) | as.character(target_vals) == ""
+  error_positions <- which(is_missing)
+  if (length(error_positions) == 0) return(NULL)
 
+  # ---- Build error message ----
+  if (is.null(cond_str)) {
+    error_message <- sprintf("Value for %s must not be null.", target_vars)
+  } else {
+    error_message <- sprintf("Value for %s must not be null when %s", target_vars, cond_str)
+  }
   # ---- Report errors ----
   idx <- which(combined_idx)[error_positions]
   original_value <- as.character(df[[target_vars]][idx])

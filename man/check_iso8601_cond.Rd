@@ -4,7 +4,15 @@
 \alias{check_iso8601_cond}
 \title{Check ISO 8601 Format with Condition}
 \usage{
-check_iso8601_cond(df, target_vars, cond_var, cond_val, type, rule_id, ...)
+check_iso8601_cond(
+  df,
+  target_vars,
+  cond_var = NULL,
+  cond_val = NULL,
+  type,
+  rule_id,
+  ...
+)
 }
 \arguments{
 \item{df}{A data frame containing the domain data to check.}

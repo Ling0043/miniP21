@@ -27,12 +27,6 @@ library(logger)
 
 check_consistent <- function(df, domain_name, target_vars, rule_id, group_vars, ...) {
 
-    # df = lb_sd1043
-    # domain_name = "LB"
-    # target_vars = "--TESTCD"
-    # group_vars = "--TEST"
-    # rule_id = "SD1043"
-
   # 1. Pre-processing ----
   actual_target_vars <- gsub("--", domain_name, target_vars)
   actual_group_vars  <- if (!is.null(group_vars)) gsub("--", domain_name, group_vars) else NULL

@@ -38,19 +38,21 @@
 # =============================================================================
 
 
-check_iso8601_cond <- function(df, target_vars, cond_var, cond_val, type, rule_id, ...) {
+check_iso8601_cond <- function(df, target_vars, cond_var = NULL, cond_val = NULL, type, rule_id, ...) {
 
-  if (!cond_var %in% names(df) || !target_vars %in% names(df)) {
+  if (is.null(cond_var) || is.null(cond_val) || !cond_var %in% names(df) || !target_vars %in% names(df)) {
     return(NULL)
   }
-
-  target_idx <- which(df[[cond_var]] %in% cond_val)
+  if (!is.null(cond_var)) {
+    target_idx <- which(df[[cond_var]] %in% cond_val)
+    vals_to_check <- df[[target_vars]][target_idx]
+  } else {
+    vals_to_check <- df[[target_vars]]
+  }
   
   if (length(target_idx) == 0) {
     return(NULL) 
   }
-
-  vals_to_check <- df[[target_vars]][target_idx]
 
   if (type == "date") {
     iso_regex <- "^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])(T([01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d(\\.\\d+)?)?(Z|[+-]([01]\\d|2[0-3]):?[0-5]\\d)?)?$"

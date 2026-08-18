@@ -1,24 +1,23 @@
-#' @name check_expected_cond
-#' @title Check variable value consistency based on conditions
-#' @description Validates that a target variable equals a specific value 
-#' (or is in a set of values) when specified conditions are met.
+#' @name check_at_least_one_cond
+#' @title Check that at least one variable meets a requirement under conditions
+#' @description Validates that for each row meeting specified conditions, 
+#' at least one of the target variables is populated (or equals a specific value).
 #' 
 #' Supports wildcard '--' resolution and vectorized condition logic.
-#' Applicable to rules: SD0042, SD0023, SD0090, SD0091, SD1045, SD1046, 
-#' SD1062, SD1249, SD1314, SD2004, SD2240, SD2241, SD2242, SD2243, 
-#' SD2256, SD2266, SD2244.
+#' Applicable to rules: SD0009, SD1121, SD1333, SD2021 (and previous SD0089 etc).
 #'
 #' @param df Data frame to check.
 #' @param domain_name The domain of the dataset.
-#' @param target_vars Character vector of variables to validate.
+#' @param target_vars Character vector of variables to check.
 #' @param rule_id The rule ID being checked.
-#' @param expected_values Character string, comma-separated list of allowed 
-#' values for the target variable (e.g., "Y" or "GENC,ISO 3166-1 alpha-3").
 #' @param cond_vars Character vector. Names of the condition columns.
 #' @param cond_ops Character vector. Operators: "non_missing", "missing", 
 #'   "equal", "not_in", "not_equal".
 #' @param cond_vals Character vector. Values for operators.
 #' @param logic_op Character string, logic between conditions: "AND" or "OR".
+#' @param expected_val Character string, optional. If specified, checks that 
+#'   at least one target variable equals this value. If NULL (default), 
+#'   checks that at least one target variable is populated.
 #' @param ... Absorb extra parameters.
 #' @author Zhu Xiuling
 #'
@@ -32,7 +31,7 @@
 #
 # Version  Date        Modified by             Modification(s)
 # -------  ----------  ----------------------  -------------------------------
-# 1.0      2026-07-08  Zhu Xiuling             Initial version
+# 1.0      2026-08-13  Zhu Xiuling             Initial version
 #
 # ==============================================================================
 
@@ -40,11 +39,10 @@
 library(dplyr)
 library(logger)
 
-check_expected_cond <- function(df, domain_name, target_vars, rule_id,
-                             expected_values,
-                             cond_vars = NULL, cond_ops = NULL, cond_vals = NULL,
-                             logic_op = "AND", ...) {
-  
+check_at_least_one_cond <- function(df, domain_name, target_vars, rule_id,
+                                     cond_vars = NULL, cond_ops = NULL, cond_vals = NULL,
+                                     logic_op = "AND", expected_val = NULL, ...) {
+
   # 1. Pre-processing ----
   # Resolve wildcards
   actual_target_vars <- gsub("--", domain_name, target_vars)
@@ -55,16 +53,13 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
     actual_cond_vars <- NULL
   }
   
-  # Check if required columns exist
-  required_cols <- c(actual_target_vars, actual_cond_vars)
+  # Filter to existing columns
+  existing_target_vars <- actual_target_vars[actual_target_vars %in% names(df)]
+  if (length(existing_target_vars) == 0) return(NULL)
+  
+  required_cols <- c(actual_cond_vars)
   required_cols <- required_cols[!is.null(required_cols)]
-  
-  if (!all(required_cols %in% names(df))) {
-    return(NULL)
-  }
-  
-  # Parse expected values
-  expected_set <- trimws(unlist(strsplit(expected_values, ",", fixed = TRUE)))
+  if (!all(required_cols %in% names(df))) return(NULL)
   
   # 2. Build condition indices ----
   if (!is.null(actual_cond_vars) && length(actual_cond_vars) > 0) {
@@ -106,41 +101,36 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
   
   if (!any(combined_idx)) return(NULL)
   
-  # 3. Core logic: Value Validation ----
-  existing_target_vars <- actual_target_vars[actual_target_vars %in% names(df)]
-  if (length(existing_target_vars) == 0) return(NULL)
+  # 3. Core logic: Check At Least One ----
+  # For rows meeting the condition, check if ALL target vars fail the requirement
   
-  err_list <- lapply(existing_target_vars, function(v) {
-    vals <- df[[v]]
-    
-    # Convert to character for consistent comparison
-    vals_char <- as.character(vals)
-    
-    # Errors: Condition met, value is populated, but NOT in expected set
-    is_populated <- !is.na(vals) & trimws(vals_char) != ""
-    is_invalid   <- !vals_char %in% expected_set
-    
-    # Note: If value is missing, it is technically not equal to expected 'Y' or specific value.
-    # Usually these rules imply the variable must be populated with that value.
-    # So missing values are also errors.
-    err_mask <- combined_idx & is_invalid
-    
-    if (any(err_mask)) {
-      data.frame(
-        row_idx  = df$rownumber_new[err_mask],
-        var_name = v,
-        orig_val = vals[err_mask]
-      )
+  # Determine validity for each target variable
+  # If expected_val is set, check equality; otherwise check non-missing
+  check_matrix <- sapply(existing_target_vars, function(v) {
+    col_data <- df[[v]]
+    if (!is.null(expected_val)) {
+      !is.na(col_data) & col_data == expected_val
     } else {
-      NULL
+      !is.na(col_data) & trimws(as.character(col_data)) != ""
     }
   })
   
-  err_df <- bind_rows(err_list)
+  # Handle single column case (sapply simplifies to vector)
+  if (is.null(dim(check_matrix))) {
+    check_matrix <- matrix(check_matrix, ncol = 1)
+  }
+  
+  # Rows where NONE of the targets meet the requirement
+  all_fail <- apply(check_matrix, 1, function(row) !any(row))
+  
+  # Errors occur where condition is met AND all targets fail
+  err_idx <- which(combined_idx & all_fail)
   
   # 4. Error Reporting ----
-  if (nrow(err_df) > 0) {
-    variable_name_str <- paste(unique(err_df$var_name), collapse = ", ")
+  if (length(err_idx) > 0) {
+    err_rows <- df$rownumber_new[err_idx]
+    row_number_str <- paste(err_rows, collapse = ", ")
+    var_name_str <- paste(existing_target_vars, collapse = ", ")
     
     # Build human-readable condition description
     if (!is.null(actual_cond_vars) && length(actual_cond_vars) > 0) {
@@ -171,19 +161,25 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
       connector <- if (logic_op == "OR") " or " else " and "
       cond_str <- paste(cond_descs, collapse = connector)
       
-      error_msg <- sprintf("Value of %s must be '%s' when %s.", 
-                           variable_name_str, expected_values, cond_str)
+      if (!is.null(expected_val)) {
+        error_message_str <- sprintf("At least one of %s must equal '%s' when %s.", var_name_str, expected_val, cond_str)
+      } else {
+        error_message_str <- sprintf("At least one of %s should be populated when %s.", var_name_str, cond_str)
+      }
     } else {
-      error_msg <- sprintf("Value of %s must be '%s'.", 
-                           variable_name_str, expected_values)
+      if (!is.null(expected_val)) {
+        error_message_str <- sprintf("At least one of %s must equal '%s'.", var_name_str, expected_val)
+      } else {
+        error_message_str <- sprintf("At least one value of ('%s') should be populated.", var_name_str)
+      }
     }
     
     report_df <- report_error(
-      row_number     = as.character(err_df$row_idx),
-      variable_name  = variable_name_str,
-      original_value = as.character(err_df$orig_val),
+      row_number     = row_number_str,
+      variable_name  = var_name_str,
+      original_value = "",
       rule_id        = rule_id,
-      error_message  = error_msg
+      error_message  = error_message_str
     )
     
     return(report_df)

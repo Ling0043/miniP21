@@ -8,9 +8,9 @@ check_missing_cond(
   df,
   domain_name,
   target_vars,
-  cond_vars,
-  cond_ops,
-  cond_vals,
+  cond_vars = NULL,
+  cond_ops = NULL,
+  cond_vals = NULL,
   logic_op = "AND",
   rule_id,
   ...
