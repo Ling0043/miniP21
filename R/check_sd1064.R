@@ -25,7 +25,7 @@
 #
 # =============================================================================
 
-check_sd1064 <- function(df, ...) {
+check_sd1064 <- function(df, domain_name, ...) {
   #  # 1. Logging start ----
   # logger::log_info("[check_sd0055] Start")
 
@@ -62,6 +62,7 @@ check_sd1064 <- function(df, ...) {
     variable_name = "ETCD",
     original_value = dup_vals,
     rule_id       = "SD1064",
-    error_message = msg
+    error_message = msg,
+    domain_name   = domain_name
   )
 }

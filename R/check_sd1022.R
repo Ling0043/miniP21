@@ -7,6 +7,9 @@
 #'     and cannot contain characters other than letters in upper case, numbers, or underscores.
 #'
 #' @param df domain dataset to check
+#' @param domain_name name of the domain dataset
+#' @param target_vars variable to check
+#' @param rule_id rule ID
 #' @param ... Additional arguments (currently unused).
 #' @return rule code, check status, error detail, row number of the error
 #'
@@ -25,13 +28,20 @@
 #
 # =============================================================================
 
-check_sd1022 <- function(df, ...) {
+check_sd1022 <- function(df, domain_name, target_vars, rule_id, ...) {
+  
+  # 1. Pre-processing ----
+  target_vars <- gsub("--", domain_name, target_vars)
+  # if any of the check_cols are missing in df, return NULL (no error report)
+  if (!target_vars %in% names(df)) {
+    return(NULL)
+  }
 
-  qnam_values <- as.character(df$QNAM)
-  is_blank <- is.na(qnam_values) | trimws(qnam_values) == ""
+  check_values <- as.character(df[[target_vars]])
+  is_blank <- is.na(check_values) | trimws(check_values) == ""
   
   valid_pattern <- "^[A-Z_][A-Z0-9_]{0,7}$"
-  err_idx <- which(!grepl(valid_pattern, qnam_values) & !is_blank)
+  err_idx <- which(!grepl(valid_pattern, check_values) & !is_blank)
   
   if (length(err_idx) == 0) {
     return(NULL)
@@ -39,7 +49,7 @@ check_sd1022 <- function(df, ...) {
   
   all_errors <- list()
   for (idx in err_idx) {
-    val <- qnam_values[idx]
+    val <- check_values[idx]
 
     if (nchar(val) > 8) {
       specific_msg <- "should be <= 8 characters in length"
@@ -50,14 +60,15 @@ check_sd1022 <- function(df, ...) {
     }
     
     # 组合最终的 Message
-    msg <- sprintf("Invalid QNAM value '%s' (%s).", val, specific_msg)
+    msg <- sprintf("Invalid %s value '%s' (%s).", target_vars, val, specific_msg)
     
     all_errors[[length(all_errors) + 1]] <- report_error(
       row_number = as.character(idx),
-      variable_name = "QNAM",
+      variable_name = target_vars,
       original_value = val,
-      rule_id = "SD1022",
-      error_message = msg
+      rule_id = rule_id,
+      error_message = msg,
+      domain_name   = domain_name
     )
   }
  

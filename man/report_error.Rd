@@ -4,7 +4,14 @@
 \alias{report_error}
 \title{a error per line}
 \usage{
-report_error(row_number, variable_name, original_value, rule_id, error_message)
+report_error(
+  row_number,
+  variable_name,
+  original_value,
+  rule_id,
+  error_message,
+  domain_name
+)
 }
 \arguments{
 \item{row_number}{specific error row number}
@@ -16,9 +23,11 @@ report_error(row_number, variable_name, original_value, rule_id, error_message)
 \item{rule_id}{error rule ID}
 
 \item{error_message}{the description of the error}
+
+\item{domain_name}{the name of the domain where the error occurred}
 }
 \value{
-a date.frame
+a data.frame
 }
 \description{
 Summary of results

@@ -13,8 +13,9 @@
 #' @param original_value the original value of the error
 #' @param rule_id error rule ID
 #' @param error_message the description of the error
+#' @param domain_name the name of the domain where the error occurred
 #'
-#' @return a date.frame
+#' @return a data.frame
 #'
 #' @author Zhu Xiuling
 #'
@@ -31,13 +32,15 @@
 #
 # =============================================================================
 
-report_error <- function(row_number, variable_name, original_value, rule_id, error_message) {
+report_error <- function(row_number, variable_name, original_value, rule_id, error_message, domain_name) {
   data.frame(
-    Row = row_number,
+    Row = as.character(row_number),
     Variable = as.character(variable_name),
     Original_Value = as.character(original_value),
     Rule_ID = as.character(rule_id),
     Message = as.character(error_message),
+    Severity = "Error",
+    Domain = as.character(domain_name),
     stringsAsFactors = FALSE
   )
 }

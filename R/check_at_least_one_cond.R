@@ -56,9 +56,9 @@ check_at_least_one_cond <- function(df, domain_name, target_vars, rule_id,
   # Filter to existing columns
   existing_target_vars <- actual_target_vars[actual_target_vars %in% names(df)]
   if (length(existing_target_vars) == 0) return(NULL)
-  
+
   required_cols <- c(actual_cond_vars)
-  required_cols <- required_cols[!is.null(required_cols)]
+  required_cols <- required_cols[!is.na(required_cols) & required_cols != ""]
   if (!all(required_cols %in% names(df))) return(NULL)
   
   # 2. Build condition indices ----
@@ -70,7 +70,7 @@ check_at_least_one_cond <- function(df, domain_name, target_vars, rule_id,
                non_missing = !is.na(x) & x != "",
                missing     = is.na(x) | x == "",
                equal       = !is.na(x) & x == val,
-               not_equal   = is.na(x) | x != val,
+               not_equal   = !is.na(x) & x != val,
                not_in = {
                  excl <- trimws(unlist(strsplit(val, ",", fixed = TRUE)))
                  if ("__MISSING__" %in% excl) {
@@ -128,8 +128,7 @@ check_at_least_one_cond <- function(df, domain_name, target_vars, rule_id,
   
   # 4. Error Reporting ----
   if (length(err_idx) > 0) {
-    err_rows <- df$rownumber_new[err_idx]
-    row_number_str <- paste(err_rows, collapse = ", ")
+    row_number_str <- df$rownumber_new[err_idx]
     var_name_str <- paste(existing_target_vars, collapse = ", ")
     
     # Build human-readable condition description
@@ -175,11 +174,12 @@ check_at_least_one_cond <- function(df, domain_name, target_vars, rule_id,
     }
     
     report_df <- report_error(
-      row_number     = row_number_str,
+      row_number     = as.character(row_number_str),
       variable_name  = var_name_str,
       original_value = "",
       rule_id        = rule_id,
-      error_message  = error_message_str
+      error_message  = error_message_str,
+      domain_name    = domain_name
     )
     
     return(report_df)

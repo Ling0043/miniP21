@@ -7,18 +7,43 @@ output:
     toc_float: true
 params:
   report_data: NA
-  domain_name: NA
 ---
+
 ```{css, echo=FALSE}
+/* 美化H2标题 */
 h2 {
   background-color: #334155;
   padding: 8px 12px;
   border-radius: 13px;
   color: #FFFFFF;
   font-weight: bold;
+  margin-top: 30px;
+}
+
+/* 自定义提示框样式 */
+.alert-success {
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 5px solid #10b981;
+  margin-bottom: 20px;
+}
+
+.alert-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 5px solid #f59e0b;
+  margin-bottom: 20px;
+}
+
+
+table.dataTable {
+  font-size: 14px;
 }
 ```
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
@@ -26,49 +51,121 @@ library(DT)
 library(dplyr)
 library(knitr)
 
+
 df <- params$report_data
-domain <- params$domain_name
+
+# 数据预处理：如果数据为空，创建空数据框以防报错
+if (is.null(df) || nrow(df) == 0) {
+  df <- data.frame(
+    Row = character(), Variable = character(), Original_Value = character(),
+    Rule_ID = character(), Message = character(), Severity = character(), Domain = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+
+df_error <- df %>% filter(Severity == "Error")
+df_suggestion <- df %>% filter(Severity != "Error")
+
 ```
 
-## **1. Summary:** `r domain`  
+## **1. Summary**
 
-**Total number of errors:** `r if(is.null(df)) 0 else nrow(df)` 
+**Total number of errors:** `r nrow(df_error)` | **Total number of suggestions:** `r nrow(df_suggestion)`
 
 ```{r summary-table}
-if (!is.null(df) && nrow(df) > 0) {
-  summary_df <- df %>%
+if (nrow(df_error) > 0) {
+  summary_df <- df_error %>%
     group_by(Rule_ID) %>%
     summarise(
       Count = n(),
+      Domains = paste(unique(Domain), collapse = ", "),
       Variables = paste(unique(Variable), collapse = ", ")
     ) %>%
     arrange(desc(Count))
 
-
-  knitr::kable(summary_df, format = "markdown")
+  knitr::kable(summary_df, format = "markdown", align = "c")
 } else {
-  cat("✨ No errors were found！✨")
-  knitr::knit_exit()
+  cat("<div class='alert-success'>✨ No errors were found! ✨</div>")
 }
 ```
 
 ---
 
-## **2. Detailed Issue Log**
+## **2. Detailed Error Log**
 
-```{r details-table}
-if (!is.null(df) && nrow(df) > 0) {
+```{r error-table}
+if (nrow(df_error) > 0) {
   datatable(
-    df,
+    df_error,
     rownames = FALSE,
     filter = 'top',
+    extensions = 'Buttons',
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top; text-align: left; color: #b91c1c; font-size: 16px; font-weight: bold;',
+      'Error Details (Use column filters above to subset by Domain, Variable, etc.)'
+    ),
     options = list(
       pageLength = 20,
       autoWidth = TRUE,
-      dom = 'Bfrtip'
+      dom = 'Bfrtip',
+      buttons = c('copy', 'csv', 'excel'),
+      columnDefs = list(
+        list(className = 'dt-center', targets = c(0, 3, 5, 6))
+      )
     ),
-    colnames = c("Row", "Variable","Original Value", "Rule ID", "Message")
+    colnames = c("Row", "Variable", "Original Value", "Rule ID", "Message", "Severity", "Domain")
   ) %>%
-    formatStyle('Row', backgroundColor = '#f9f9f9')
+    formatStyle(
+      columns = c('Severity'),
+      color = 'red',
+      fontWeight = 'bold'
+    ) %>%
+    formatStyle(
+      columns = c('Rule_ID'),
+      backgroundColor = '#f8fafc'
+    )
+} else {
+  cat("<div class='alert-success'>🌟 No error records to display.</div>")
+}
+```
+
+---
+
+## **3. Suggestions & Tips Log**
+
+*This section captures non-mandatory suggestions and tips for improving data quality.*
+
+```{r suggestion-table}
+
+df_suggestion <- df_suggestion %>% select(Rule_ID, Message, Severity, Domain)
+if (nrow(df_suggestion) > 0) {
+  datatable(
+    df_suggestion,
+    rownames = FALSE,
+    filter = 'top',
+    extensions = 'Buttons',
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top; text-align: left; color: #0369a1; font-size: 16px; font-weight: bold;',
+      'Suggestion Details'
+    ),
+    options = list(
+      pageLength = 20,
+      autoWidth = TRUE,
+      dom = 'Bfrtip',
+      buttons = c('copy', 'csv', 'excel'),
+      columnDefs = list(
+        list(className = 'dt-center', targets = c(0, 2, 3))
+      )
+    ),
+    colnames = c("Rule ID", "Message", "Severity", "Domain")
+  ) %>%
+    formatStyle(
+      columns = c('Severity'),
+      color = '#0284c7',
+      fontWeight = 'bold'
+    )
+} else {
+  cat("✨ No suggestions were found! ✨")
 }
 ```

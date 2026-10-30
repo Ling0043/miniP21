@@ -73,7 +73,8 @@ check_iso8601_cond <- function(df, target_vars, cond_var = NULL, cond_val = NULL
       variable_name = target_vars,
       original_value = original_value,
       rule_id = rule_id,
-      error_message = sprintf("Value must be ISO 8601 format when %s='%s'",cond_var, cond_val)
+      error_message = sprintf("Value must be ISO 8601 format when %s='%s'",cond_var, cond_val),
+      domain_name = domain_name
     )
     return(report_df)
   }

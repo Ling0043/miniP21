@@ -5,164 +5,66 @@
 #' @description validate the Submission-ready SDTM rds dataset,
 #'     including structure, values, and logic and output a report
 #'
-#' @param df domain dataset to check
+#' @param data_list A named list of SDTM domain datasets to check
 #'
-#' @return a validation report
+#' @return a html validation report
 #'
 #' @author Zhu Xiuling
 #'
 #' @import dplyr
-#' @importFrom logger log_info
-#'
-#' @export
-#'
-#' @examples
-#' # minimal reproducible example
-#' \dontrun{
-#'   ta <- data.frame(
-#'   Row = 1:6,
-#'  STUDYID = c("EX7", "EX7", "EX7", "EX7", "EX7", "EX7"),
-#'   DOMAIN = c("TA", "TA", "TA", "TA", "TA", "TA"),
-#'   ARMCD = c(1, 1, 1, 1, 1, 1),
-#'   ARM = c("CR", "CR", NA, "CR", "", "CR"),
-#'   TAETORD = as.character(1:6),
-#'   ETCD = c("SCRN", "ICR", "CRNS", "C", "C", "FU"),
-#'   ELEMENT = c("Screen", "Initial Chemo + RT",
-#'               "Chemo+RT (non-Surgery)", "Chemo",
-#'               "Chemo", "Off Treatment Follow-up"),
-#'   TABRANCH = c("Randomized to CR", "", "",
-#'                "", "", ""),
-#'   TATRANS = c("", "", "If progression, skip to Follow-up.",
-#'               "", "", ""),
-#'   EPOCH = c("SCREENING", "INDUCTION TREATMENT",
-#'             "INDUCTION TREATMENT", "CONTINUATION TREATMENT",
-#'             "CONTINUATION TREATMENT", "FOLLOW-UP")
-#' )
-#'   fct_validate_sdtm(ta)
-#' }
+fct_validate_sdtm <- function(data_list) {
 
-# =============================================================================
-# Modification History
-# =============================================================================
-#
-# Version  Date        Modified by             Modification(s)
-# -------  ----------  ----------------------  -------------------------------
-# 1.0      2026-05-10  Zhu Xiuling             Initial version
-# 1.1      2026-06-05  Zhu Xiuling             Update the structure
-# =============================================================================
+  # 0. Normalize names ----
+  if (is.null(names(data_list)) || any(names(data_list) == "")) {
+    stop("ERROR: 'data_list' must be a named list of data frames.")
+  }
+  names(data_list) <- toupper(trimws(names(data_list)))
+  data_list <- lapply(data_list, function(d) {
+    d <- d %>% mutate(rownumber_new = dplyr::row_number())
+    d
+  })
 
-# Library imports ----
-library(dplyr)
-library(logger)
+  # Validate dataset names and capture non-standard but plausible names
+  checked   <- fct_validate_datalist_names(data_list)
+  data_list <- checked$valid_list
+  entry_issues <- checked$issues
 
-fct_validate_sdtm <- function(df) {
-  #  # 1. Logging start ----
-  # logger::log_info("[check_sd0002] Start")
-
-  # 2. Input validation ----
-  if (!is.data.frame(df)) {
-    stop("ERROR: 'data' must be a data frame.")
+  if (nrow(data_list) == 0 && length(data_list) == 0) {
+    stop("ERROR: No dataset passed entry validation. ",
+         "Please check the entry issues: dataset names and DOMAIN variables.")
   }
 
-  if (nrow(df) == 0) {
-    stop("ERROR: Dataset must have at least one record.")
+  reports <- list()
+  issues  <- list()
+
+  # 1. Single-domain checks ----
+  for (nm in names(data_list)) {
+    res <- tryCatch(
+      fct_validate_sdtm_single(data_list[[nm]], domain_name = nm),
+      error = function(e) {
+        issues[[length(issues) + 1]] <<- fct_add_execution_issue(
+          "-",
+          sprintf("Domain '%s' failed validation entirely: %s", nm, e$message),
+          domain_name = nm)
+        NULL
+      }
+    )
+    if (!is.null(res)) reports[[length(reports)+1]] <- res
   }
 
-  if (!"DOMAIN" %in% names(df)) {
-    stop("ERROR: Dataset must contain a 'DOMAIN' column.")
+  # 2. Cross-domain checks ----
+  multi_report <- fct_validate_sdtm_multi(data_list)
+  if (!is.null(multi_report)) reports[[length(reports)+1]] <- multi_report
+
+  # 3. Final report ----
+  final_report <- dplyr::bind_rows(reports, issues, entry_issues)
+
+  if (nrow(final_report) == 0) {
+    message("All checks passed. No errors found.")
+    return(invisible(NULL))
   }
 
-  domain_actual <- unique(df[["DOMAIN"]])
-  if (length(domain_actual) != 1) {
-    stop("ERROR: 'DOMAIN' column must have exactly one unique value per dataset.")
-  }
-
-  domain_name <- deparse(substitute(df)) %>% toupper()
-  if (domain_actual != domain_name) {
-    stop("ERROR: DOMAIN variable should be consistent with the name of the dataset.")
-  }
-
-  # create a row number column for df
-  df <- df %>%
-    mutate(rownumber_new = row_number())
-
-  # 3. Pre-processing ----
-  rules_df <- fct_get_rules(domain_name = domain_name)
-
-  # if there are no rules for this domain then return null
-  if (is.null(rules_df) || nrow(rules_df) == 0) {
-    message(sprintf("No rules found for domain: %s", domain_name))
-    return(NULL)
-  }
-
-  # 4. Core logic ----
-  all_results <- list()
-  pkg_env <- asNamespace("miniP21")
-
-  for (i in seq_len(nrow(rules_df))) {
-    rule_id     <- rules_df$code[i]
-    func_name   <- rules_df$coreFunction[i]
-    target_vars <- rules_df$targetVariable[i]
-    rule_params <- rules_df$ruleParams[i]
-
-    # chech function name is not NA or empty
-    if (is.na(func_name) || func_name == "") {
-      message(sprintf("[-] Skip: Core function not defined for rule '%s'.", rule_id))
-      next
-    }
-
-    # check function exists in the package environment
-    if (!exists(func_name, mode = "function", envir = pkg_env)) {
-      message(sprintf("[-] Skip: Function '%s' for rule '%s' is not implemented yet.", func_name, rule_id))
-      next
-    }
-
-    if (!is.na(target_vars) && trimws(target_vars) != "") {
-          target_vars_vec <- trimws(unlist(strsplit(as.character(target_vars), split = ",")))
-        } else {
-          target_vars_vec <- NULL
-        }
-    # basic parameters
-    args_list <- list(
-          df = df,
-          domain_name = domain_name,
-          target_vars = target_vars_vec,
-          rule_id = rule_id
-        )
-    
-    # If rule_params is not NA or empty, parse it and add to args_list
-    if (!is.na(rule_params) && trimws(rule_params) != "") {
-      specific_args <- tryCatch({
-        jsonlite::fromJSON(rule_params)
-      }, error = function(e) {
-        warning(sprintf("Failed to parse ruleParams for %s: %s", rule_id, e$message))
-      })
-
-      args_list <- c(args_list, specific_args)
-    }
-
-    # --- runing code ---    
-    check_func <- get(func_name, mode = "function", envir = pkg_env)
-
-    res <- tryCatch({
-      do.call(check_func, args_list)
-    }, error = function(e) {
-      warning(sprintf("Error executing %s for %s: %s", func_name, rule_id, e$message))
-      return(NULL)
-    })
-    
-    if (!is.null(res) && is.data.frame(res) && nrow(res) > 0) {
-      all_results[[rule_id]] <- res
-    }
-  }
-
-  # Combine and Report ----
-  if (length(all_results) == 0) {
-    message(sprintf("All checks passed for domain: %s. No errors found.", domain_name))
-    return(NULL)
-  }
-
-  final_report <- dplyr::bind_rows(all_results)
-
-  generate_report(report_df = final_report, domain_name = domain_name)
+  # return(final_report)
+ 
+ generate_report(final_report)
 }

@@ -33,9 +33,6 @@
 #
 # ==============================================================================
 
-# 1. Library imports ----
-library(dplyr)
-library(logger)
 
 check_cond_numeric <- function(df, domain_name, target_vars, rule_id, cond_var, cond_val = NULL, allow_prefix = FALSE, ...) {
   
@@ -111,7 +108,6 @@ check_cond_numeric <- function(df, domain_name, target_vars, rule_id, cond_var, 
   # 4. Error Reporting ----
   if (nrow(err_df) > 0) {
     # Aggregate row numbers and values for report
-    row_number_str <- paste(unique(err_df$row_idx), collapse = ", ")
     variable_name_str <- paste(unique(err_df$var_name), collapse = ", ")
     
     # Construct specific error message
@@ -122,11 +118,12 @@ check_cond_numeric <- function(df, domain_name, target_vars, rule_id, cond_var, 
     }
     
     report_df <- report_error(
-      row_number     = row_number_str,
+      row_number     = as.character(err_df$row_idx),
       variable_name  = variable_name_str,
       original_value = "", # Omit detailed values for brevity in summary
       rule_id        = rule_id,
-      error_message  = error_msg
+      error_message  = error_msg,
+      domain_name    = domain_name
     )
     return(report_df)
   }

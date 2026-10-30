@@ -54,8 +54,8 @@ check_value_permit_cond <- function(df, domain_name, target_vars, rule_id,
   
   # Check if required columns exist
   required_cols <- c(actual_target_vars, actual_cond_vars)
-  required_cols <- required_cols[!is.null(required_cols)]
-  
+  required_cols <- required_cols[!is.na(required_cols) & required_cols != ""]
+
   if (!all(required_cols %in% names(df))) {
     return(NULL)
   }
@@ -72,7 +72,7 @@ check_value_permit_cond <- function(df, domain_name, target_vars, rule_id,
                non_missing = !is.na(x) & x != "",
                missing     = is.na(x) | x == "",
                equal       = !is.na(x) & x == val,
-               not_equal   = is.na(x) | x != val,
+               not_equal   = !is.na(x) & x != val,
                not_in = {
                  excl <- trimws(unlist(strsplit(val, ",", fixed = TRUE)))
                  if ("__MISSING__" %in% excl) {
@@ -176,7 +176,8 @@ check_value_permit_cond <- function(df, domain_name, target_vars, rule_id,
       variable_name  = variable_name_str,
       original_value = "",
       rule_id        = rule_id,
-      error_message  = error_msg
+      error_message  = error_msg,
+      domain_name   = domain_name
     )
     
     return(report_df)

@@ -57,19 +57,19 @@ check_consistent <- function(df, domain_name, target_vars, rule_id, group_vars, 
   if (nrow(cont_non_consistent) > 0) {
     result_consistent <- df %>% semi_join(cont_non_consistent %>% select(all_of(actual_group_vars)), by = actual_group_vars)
     err_idx2 <- result_consistent$rownumber_new
-    row_number2 <- paste0(err_idx2, collapse = ", ")
     variable_name2 <- paste(actual_target_vars, collapse = ", ")
-    original_value2 <- unique(result_consistent[, actual_target_vars], drop = FALSE) %>% paste0(collapse = " | ")
+    original_value2 <- result_consistent[, actual_target_vars]
     error_message2 <- sprintf("Value is not consistent %s.",
                              ifelse(!is.null(actual_group_vars), 
                                     sprintf("within %s", paste(actual_group_vars, collapse = ", ")), 
                                     " in dataset"))
     report_df2 <- report_error(
-      row_number    = row_number2,
+      row_number    = as.character(err_idx2),
       variable_name = variable_name2,
       original_value = original_value2,
       rule_id       = rule_id,
-      error_message = error_message2
+      error_message = error_message2,
+      domain_name   = domain_name
     )
   } else {
     report_df2 <- NULL

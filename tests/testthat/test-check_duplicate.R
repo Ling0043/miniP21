@@ -14,8 +14,8 @@ dm_sd0005 <- data.frame(
 te_sd1064 <- data.frame(
   STUDYID = "STUDY01",
   DOMAIN = "TE",
-  ETCD = c("E1", "E1", "E2"),
-  rownumber_new = 1:3,
+  ETCD = c("E1", "E1", "E2", "E2"),
+  rownumber_new = 1:4,
   stringsAsFactors = FALSE
 )
 
@@ -44,7 +44,7 @@ ts_sd1216_ok <- data.frame(
 # SD0005: Duplicate SEQ within USUBJID
 test_that("SD0005: catches duplicate LBSEQ within USUBJID", {
   expected_error <- data.frame(
-    Row = "1, 2",
+    Row = c("1 | 2"),
     Variable = "LBSEQ",
     Original_Value = "1",
     Rule_ID = "SD0005",
@@ -102,9 +102,9 @@ test_that("SD0005: returns NULL if required columns missing", {
 # SD1064: Duplicate ETCD in TE
 test_that("SD1064: catches duplicate ETCD in TE domain", {
   expected_error <- data.frame(
-    Row = "1, 2",
+    Row = c("1 | 2", "3 | 4"),
     Variable = "ETCD",
-    Original_Value = "E1",
+    Original_Value = c("E1", "E2"),
     Rule_ID = "SD1064",
     Message = "Combination is duplicated 2 times in dataset.",
     stringsAsFactors = FALSE
@@ -119,7 +119,7 @@ test_that("SD1064: catches duplicate ETCD in TE domain", {
   )
 
   expect_s3_class(res, "data.frame")
-  expect_equal(nrow(res), 1)
+  expect_equal(nrow(res), 2)
   expect_equal(res$Row, expected_error$Row)
   expect_equal(res$Variable, expected_error$Variable)
   expect_equal(res$Original_Value, expected_error$Original_Value)
@@ -130,6 +130,7 @@ test_that("SD1064: catches duplicate ETCD in TE domain", {
 test_that("SD1064: returns NULL when ETCD is unique", {
   te_ok <- te_sd1064
   te_ok$ETCD[2] <- "E3"  # make unique
+  te_ok$ETCD[4] <- "E4"  # make unique
 
   res <- check_duplicate(
     df = te_ok,
@@ -145,9 +146,9 @@ test_that("SD1064: returns NULL when ETCD is unique", {
 # SD1216: Only one AGEMAX record in TS
 test_that("SD1216: catches duplicate AGEMAX records using filter_values", {
   expected_error <- data.frame(
-    Row = "1, 2",
+    Row = c("1 | 2"),
     Variable = "TSPARMCD",
-    Original_Value = "AGEMAX",
+    Original_Value = c("AGEMAX"),
     Rule_ID = "SD1216",
     Message = "Combination is duplicated 2 times in dataset.",
     stringsAsFactors = FALSE
@@ -254,9 +255,9 @@ test_that("filter_values restricts duplicate check to specified value only", {
 
   # With filter, only AGEMAX duplicates should be caught (2 records)
   expected_error <- data.frame(
-    Row = "1, 2",
+    Row = c("1 | 2"),
     Variable = "TSPARMCD",
-    Original_Value = "AGEMAX",
+    Original_Value = c("AGEMAX"), 
     Rule_ID = "BOUNDARY_FILTER",
     Message = "Combination is duplicated 2 times in dataset.",
     stringsAsFactors = FALSE

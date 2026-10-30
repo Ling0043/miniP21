@@ -67,7 +67,8 @@ check_sd0055 <- function(df, domain_name, ...) {
         original_value = "-",
         rule_id = "SD0055",
         error_message = sprintf("Type mismatch: Expected '%s', but '%s' in dataframe.",
-                                expected_type, actual_class)
+                                expected_type, actual_class),
+        domain_name   = domain_name
       )
     }
   }

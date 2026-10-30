@@ -143,6 +143,7 @@ test_that("SD2235: catches missing unconditional required HLTSUBJI parameter", {
   )
   res <- check_ts_param_required(
     df = ts_sd2235_missing,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "HLTSUBJI",
     rule_id = "SD2235"
@@ -159,6 +160,7 @@ test_that("SD2235: catches missing unconditional required HLTSUBJI parameter", {
 test_that("SD2235: returns NULL when HLTSUBJI parameter is populated", {
   res <- check_ts_param_required(
     df = ts_sd2235_ok,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "HLTSUBJI",
     rule_id = "SD2235"
@@ -177,6 +179,7 @@ test_that("SD2280: catches missing unconditional required SDTIGVER parameter", {
   )
   res <- check_ts_param_required(
     df = ts_sd2280_missing,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "SDTIGVER",
     rule_id = "SD2280"
@@ -201,6 +204,7 @@ test_that("SD2280: catches SDTIGVER exists but value is empty string", {
   )
   res <- check_ts_param_required(
     df = ts_sd2280_empty,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "SDTIGVER",
     rule_id = "SD2280"
@@ -217,6 +221,7 @@ test_that("SD2280: catches SDTIGVER exists but value is empty string", {
 test_that("SD2280: returns NULL when SDTIGVER parameter has valid value", {
   res <- check_ts_param_required(
     df = ts_sd2280_ok,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "SDTIGVER",
     rule_id = "SD2280"
@@ -235,6 +240,7 @@ test_that("SD2228: catches missing INTMODEL when STYPE equals INTERVENTIONAL", {
   )
   res <- check_ts_param_required(
     df = ts_sd2228_cond_met_missing,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "INTMODEL",
     cond_param = "STYPE",
@@ -253,6 +259,7 @@ test_that("SD2228: catches missing INTMODEL when STYPE equals INTERVENTIONAL", {
 test_that("SD2228: returns NULL when INTMODEL is populated under met condition", {
   res <- check_ts_param_required(
     df = ts_sd2228_cond_met_ok,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "INTMODEL",
     cond_param = "STYPE",
@@ -265,6 +272,7 @@ test_that("SD2228: returns NULL when INTMODEL is populated under met condition",
 test_that("SD2228: returns NULL when STYPE does not match condition value", {
   res <- check_ts_param_required(
     df = ts_sd2228_cond_not_met,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "INTMODEL",
     cond_param = "STYPE",
@@ -285,6 +293,7 @@ test_that("SD2223: catches missing PCLAS when INTTYPE is in applicable value lis
   )
   res <- check_ts_param_required(
     df = ts_sd2223_cond_met_missing,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "PCLAS",
     cond_param = "INTTYPE",
@@ -303,6 +312,7 @@ test_that("SD2223: catches missing PCLAS when INTTYPE is in applicable value lis
 test_that("SD2223: returns NULL when INTTYPE is not in applicable value list", {
   res <- check_ts_param_required(
     df = ts_sd2223_cond_inttype_mismatch,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "PCLAS",
     cond_param = "INTTYPE",
@@ -315,6 +325,7 @@ test_that("SD2223: returns NULL when INTTYPE is not in applicable value list", {
 test_that("SD2223: returns NULL when PCLAS is populated under met conditions", {
   res <- check_ts_param_required(
     df = ts_sd2223_cond_met_ok,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "PCLAS",
     cond_param = "INTTYPE",
@@ -327,6 +338,7 @@ test_that("SD2223: returns NULL when PCLAS is populated under met conditions", {
 test_that("Boundary: returns NULL when value column is missing from dataset", {
   res <- check_ts_param_required(
     df = ts_missing_valcol,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "HLTSUBJI",
     rule_id = "SD2235"
@@ -337,6 +349,7 @@ test_that("Boundary: returns NULL when value column is missing from dataset", {
 test_that("Boundary: returns NULL when condition parameter code does not exist", {
   res <- check_ts_param_required(
     df = ts_no_cond_param,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "INTMODEL",
     cond_param = "STYPE",
@@ -357,6 +370,7 @@ test_that("Boundary: catches parameter exists but all values are NA", {
   )
   res <- check_ts_param_required(
     df = ts_param_all_na,
+    domain_name = "TS",
     target_vars = "TSPARMCD",
     param_code = "HLTSUBJI",
     rule_id = "SD2235"

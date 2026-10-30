@@ -51,7 +51,8 @@ check_length <- function(df,domain_name, rule_id, target_vars, length_limit, ...
     original_value = actual_value,
     rule_id = rule_id,
     error_message = sprintf("The value of '%s' should be <= %d characters in length. But actual value is '%s'", 
-                            target_vars, length_limit, actual_value)))
+                            target_vars, length_limit, actual_value),
+    domain_name   = domain_name))
     }
   # logger::log_info("[check_length] End.")
   return(NULL)

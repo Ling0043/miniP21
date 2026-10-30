@@ -88,14 +88,59 @@ se_all_cond_not_met <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# ---- Datasets ----
+# SD1363: DM domain for ARMCD and ARM
+dm_1363 <- data.frame(
+  STUDYID = "STUDY01",
+  DOMAIN = "DM",
+  USUBJID = c("SUB1", "SUB2", "SUB3"),
+  ACTARMCD = c("SCRNFAIL", "NOTASSGN", "PLACEBO"),
+  ARMCD = c("PLACEBO", NA, "PLACEBO"),
+  ARM = c("Placebo", NA, "Placebo"),
+  stringsAsFactors = FALSE
+)
+
+# SD1364: DM domain for ACTARMCD and ACTARM
+dm_1364 <- data.frame(
+  STUDYID = "STUDY01",
+  DOMAIN = "DM",
+  USUBJID = c("SUB1", "SUB2", "SUB3"),
+  ARMCD = c("SCRNFAIL", "NOTTRT", "PLACEBO"),
+  ACTARMCD = c("PLACEBO", NA, "PLACEBO"),
+  ACTARM = c("Placebo", NA, "Placebo"),
+  stringsAsFactors = FALSE
+)
+
+# SD1375: DM domain for RFENDTC
+dm_1375 <- data.frame(
+  STUDYID = "STUDY01",
+  DOMAIN = "DM",
+  USUBJID = c("SUB1", "SUB2", "SUB3"),
+  ACTARMCD = c(NA, NA, "PLACEBO"),
+  ARMNRS = c("OTHER", "UNPLANNED TREATMENT", "OTHER"),
+  RFENDTC = c("2021-01-01", "2021-02-01", "2021-03-01"),
+  stringsAsFactors = FALSE
+)
+
+# Boundary: Missing target_vars in df
+dm_missing <- data.frame(
+  STUDYID = "STUDY01",
+  DOMAIN = "DM",
+  USUBJID = c("SUB1"),
+  ACTARMCD = c("SCRNFAIL"),
+  stringsAsFactors = FALSE
+)
+
+
+
 # ---- Tests ----
 test_that("SD1010: catches populated ELEMENT when ETCD='UNPLAN'", {
   expected_error <- data.frame(
     Row = "2",
     Variable = "ELEMENT",
-    Original_Value = "Unplanned Element",
+    Original_Value = " ",
     Rule_ID = "SD1010",
-    Message = "Value of ELEMENT must be null when ETCD='UNPLAN'",
+    Message = "Value of ( ELEMENT ) must be null when ETCD='UNPLAN'",
     stringsAsFactors = FALSE
   )
   res <- check_be_null_cond(
@@ -136,9 +181,9 @@ test_that("SD1019: catches populated VISITDY when SVUPDES is provided", {
   expected_error <- data.frame(
     Row = "2",
     Variable = "VISITDY",
-    Original_Value = "10",
+    Original_Value = " ",
     Rule_ID = "SD1019",
-    Message = "Value of VISITDY must be null when SVUPDES is provided",
+    Message = "Value of ( VISITDY ) must be null when SVUPDES is provided",
     stringsAsFactors = FALSE
   )
   res <- check_be_null_cond(
@@ -179,9 +224,9 @@ test_that("SD1238: catches populated --RFTDTC when --TPTREF is missing", {
   expected_error <- data.frame(
     Row = "2",
     Variable = "LBRFTDTC",
-    Original_Value = "2023-01-01",
+    Original_Value = " ",
     Rule_ID = "SD1238",
-    Message = "Value of LBRFTDTC must be null when LBTPTREF is missing",
+    Message = "Value of ( LBRFTDTC ) must be null when LBTPTREF is missing",
     stringsAsFactors = FALSE
   )
   res <- check_be_null_cond(
@@ -222,9 +267,9 @@ test_that("Boundary: validates multi-condition AND logic correctly", {
   expected_error <- data.frame(
     Row = "2",
     Variable = "ELEMENT",
-    Original_Value = "Invalid Value",
+    Original_Value = " ",
     Rule_ID = "SD1010",
-    Message = "Value of ELEMENT must be null when ETCD='UNPLAN' and SEDECOD='UNPLANNED'",
+    Message = "Value of ( ELEMENT ) must be null when ETCD='UNPLAN' and SEDECOD='UNPLANNED'",
     stringsAsFactors = FALSE
   )
   res <- check_be_null_cond(
@@ -250,9 +295,9 @@ test_that("Boundary: validates multi-condition OR logic correctly", {
   expected_error <- data.frame(
     Row = "2",
     Variable = "ELEMENT",
-    Original_Value = "Unscheduled Visit",
+    Original_Value = " ",
     Rule_ID = "SD1010",
-    Message = "Value of ELEMENT must be null when ETCD='UNPLAN' or ETCD='UNSCHED'",
+    Message = "Value of ( ELEMENT ) must be null when ETCD='UNPLAN' or ETCD='UNSCHED'",
     stringsAsFactors = FALSE
   )
   res <- check_be_null_cond(
@@ -278,9 +323,9 @@ test_that("Boundary: validates not_in operator with __MISSING__ token", {
   expected_error <- data.frame(
     Row = "1",
     Variable = "LBORRES",
-    Original_Value = "20",
+    Original_Value = " ",
     Rule_ID = "SD1066",
-    Message = "Value of LBORRES must be null when LBSTAT is not in ('DONE') and is not missing",
+    Message = "Value of ( LBORRES ) must be null when LBSTAT is not in ('DONE') and is not missing",
     stringsAsFactors = FALSE
   )
   res <- check_be_null_cond(
@@ -358,6 +403,167 @@ test_that("Boundary: returns NULL when target is NA under met condition", {
     cond_ops = "equal",
     cond_vals = "UNPLAN",
     rule_id = "SD1010"
+  )
+  expect_null(res)
+})
+
+
+
+# ---- Tests ----
+# SD1363: ARMCD/ARM is populated for a subject not assigned to treatment
+test_that("SD1363: catches ARMCD/ARM populated for unassigned subject", {
+  expected_error <- data.frame(
+    Row = "1",
+    Variable = "ARMCD, ARM",
+    Original_Value = " ",
+    Rule_ID = "SD1363",
+    Message = "Value of ( ARMCD, ARM ) must be null when ACTARMCD='SCRNFAIL' or ACTARMCD='NOTASSGN'",
+    stringsAsFactors = FALSE
+  )
+  
+  res <- check_be_null_cond(
+    df = dm_1363,
+    domain_name = "DM",
+    target_vars = c("ARMCD", "ARM"),
+    cond_vars = "ACTARMCD",
+    cond_ops = "equal",
+    cond_vals = c("SCRNFAIL", "NOTASSGN"),
+    logic_op = "OR",
+    rule_id = "SD1363"
+  )
+  
+  expect_s3_class(res, "data.frame")
+  expect_equal(nrow(res), 1)
+  expect_equal(res$Row, expected_error$Row)
+  expect_equal(res$Variable, expected_error$Variable)
+  expect_equal(res$Original_Value, expected_error$Original_Value)
+  expect_equal(res$Rule_ID, expected_error$Rule_ID)
+  expect_equal(res$Message, expected_error$Message)
+})
+
+test_that("SD1363: returns NULL when no violation", {
+  dm_ok <- dm_1363
+  dm_ok$ARMCD[1] <- NA
+  dm_ok$ARM[1] <- NA
+  res <- check_be_null_cond(
+    df = dm_ok,
+    domain_name = "DM",
+    target_vars = c("ARMCD", "ARM"),
+    cond_vars = "ACTARMCD",
+    cond_ops = "equal",
+    cond_vals = c("SCRNFAIL", "NOTASSGN"),
+    logic_op = "OR",
+    rule_id = "SD1363"
+  )
+  expect_null(res)
+})
+
+# SD1364: ACTARMCD/ACTARM is populated for a subject who wasn't treated
+test_that("SD1364: catches ACTARMCD/ACTARM populated for untreated subject", {
+  expected_error <- data.frame(
+    Row = "1",
+    Variable = "ACTARMCD, ACTARM",
+    Original_Value = " ",
+    Rule_ID = "SD1364",
+    Message = "Value of ( ACTARMCD, ACTARM ) must be null when ARMCD='SCRNFAIL' or ARMCD='NOTASSGN' or ARMCD='NOTTRT'",
+    stringsAsFactors = FALSE
+  )
+  
+  res <- check_be_null_cond(
+    df = dm_1364,
+    domain_name = "DM",
+    target_vars = c("ACTARMCD", "ACTARM"),
+    cond_vars = "ARMCD",
+    cond_ops = "equal",
+    cond_vals = c("SCRNFAIL", "NOTASSGN", "NOTTRT"),
+    logic_op = "OR",
+    rule_id = "SD1364"
+  )
+  
+  expect_s3_class(res, "data.frame")
+  expect_equal(nrow(res), 1)
+  expect_equal(res$Row, expected_error$Row)
+  expect_equal(res$Variable, expected_error$Variable)
+  expect_equal(res$Original_Value, expected_error$Original_Value)
+  expect_equal(res$Rule_ID, expected_error$Rule_ID)
+  expect_equal(res$Message, expected_error$Message)
+})
+
+test_that("SD1364: returns NULL when no violation", {
+  dm_ok <- dm_1364
+  dm_ok$ACTARMCD[1] <- NA
+  dm_ok$ACTARM[1] <- NA
+  res <- check_be_null_cond(
+    df = dm_ok,
+    domain_name = "DM",
+    target_vars = c("ACTARMCD", "ACTARM"),
+    cond_vars = "ARMCD",
+    cond_ops = "equal",
+    cond_vals = c("SCRNFAIL", "NOTASSGN", "NOTTRT"),
+    logic_op = "OR",
+    rule_id = "SD1364"
+  )
+  expect_null(res)
+})
+
+# SD1375: RFENDTC is populated for subject who did not receive treatment
+test_that("SD1375: catches RFENDTC populated when ACTARMCD is missing and ARMNRS is not in exclusion", {
+  expected_error <- data.frame(
+    Row = "1",
+    Variable = "RFENDTC",
+    Original_Value = " ",
+    Rule_ID = "SD1375",
+    Message = "Value of ( RFENDTC ) must be null when ACTARMCD is missing and ARMNRS is not in ('UNPLANNED TREATMENT')",
+    stringsAsFactors = FALSE
+  )
+  
+  res <- check_be_null_cond(
+    df = dm_1375,
+    domain_name = "DM",
+    target_vars = "RFENDTC",
+    cond_vars = c("ACTARMCD", "ARMNRS"),
+    cond_ops = c("missing", "not_in"),
+    cond_vals = c("", "UNPLANNED TREATMENT"),
+    logic_op = "AND",
+    rule_id = "SD1375"
+  )
+  
+  expect_s3_class(res, "data.frame")
+  expect_equal(nrow(res), 1)
+  expect_equal(res$Row, expected_error$Row)
+  expect_equal(res$Variable, expected_error$Variable)
+  expect_equal(res$Original_Value, expected_error$Original_Value)
+  expect_equal(res$Rule_ID, expected_error$Rule_ID)
+  expect_equal(res$Message, expected_error$Message)
+})
+
+test_that("SD1375: returns NULL when no violation", {
+  dm_ok <- dm_1375
+  dm_ok$RFENDTC[1] <- NA
+  res <- check_be_null_cond(
+    df = dm_ok,
+    domain_name = "DM",
+    target_vars = "RFENDTC",
+    cond_vars = c("ACTARMCD", "ARMNRS"),
+    cond_ops = c("missing", "not_in"),
+    cond_vals = c("", "UNPLANNED TREATMENT"),
+    logic_op = "AND",
+    rule_id = "SD1375"
+  )
+  expect_null(res)
+})
+
+# Boundary: Missing target_vars in df
+test_that("Boundary: returns NULL when target_vars missing in df", {
+  res <- check_be_null_cond(
+    df = dm_missing,
+    domain_name = "DM",
+    target_vars = c("ARMCD", "ARM"),
+    cond_vars = "ACTARMCD",
+    cond_ops = "equal",
+    cond_vals = c("SCRNFAIL", "NOTASSGN"),
+    logic_op = "OR",
+    rule_id = "SD_BOUND1"
   )
   expect_null(res)
 })

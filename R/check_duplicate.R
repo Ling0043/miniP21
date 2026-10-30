@@ -27,13 +27,6 @@ library(dplyr)
 library(logger)
 
 check_duplicate <- function(df, domain_name, target_vars, rule_id, group_vars = NULL, filter_values = NULL, ...) {
-
-# df = ts_sd1216_ok
-# domain_name = "TS"
-# target_vars = "TSPARMCD"
-# rule_id = "SD1216"
-# group_vars = NULL
-# filter_values = "AGEMAX"
   # 1. Pre-processing ----
   actual_target_vars <- gsub("--", domain_name, target_vars)
   actual_group_vars  <- if (!is.null(group_vars)) gsub("--", domain_name, group_vars) else NULL
@@ -64,26 +57,43 @@ check_duplicate <- function(df, domain_name, target_vars, rule_id, group_vars = 
   ## check duplicates in the composite key (check_cols)
   is_dup <- duplicated(df_check) | duplicated(df_check, fromLast = TRUE)
   if (any(is_dup)) {
-    err_idx <- df_rownumbered[is_dup, "rownumber_new"]
-    row_number <- paste0(err_idx, collapse = ", ")
-    times <- length(err_idx)
-    variable_name <- actual_target_vars
-    original_value <- unique(df_check[is_dup, actual_target_vars, drop = FALSE])
-    error_message <- sprintf("Combination is duplicated %d times %s.",
-                             times,
-                             ifelse(!is.null(actual_group_vars),
-                                    sprintf("within %s", paste(actual_group_vars, collapse = ", ")), 
-                                    "in dataset"))
+    df_dup <- df_check[is_dup, , drop = FALSE]
+    df_dup$rownumber_new <- as.character(df_rownumbered[is_dup, "rownumber_new"])
+
+    dup_groups <- df_dup %>%
+      group_by(across(all_of(check_cols))) %>%
+      summarise(
+        row_number = paste(rownumber_new, collapse = " | "),
+        times      = n(),
+        .groups    = "drop"
+      )
+
+    original_value_df <- dup_groups %>% select(all_of(actual_target_vars))
+    if (length(actual_target_vars) == 1) {
+      original_value <- original_value_df[[actual_target_vars]]
+    } else {
+      original_value <- do.call(paste, c(original_value_df, sep = ", "))
+    }
+
+    error_message <- sprintf(
+      "Combination is duplicated %d times %s.",
+      dup_groups$times,
+      if (!is.null(actual_group_vars))
+        sprintf("within %s", paste(actual_group_vars, collapse = ", "))
+      else "in dataset"
+    )
+
+
     report_df1 <- report_error(
-      row_number    = row_number,
-      variable_name = variable_name,
+      row_number     = dup_groups$row_number,
+      variable_name  = actual_target_vars,
       original_value = original_value,
-      rule_id       = rule_id,
-      error_message = error_message
+      rule_id        = rule_id,
+      error_message  = error_message,
+      domain_name    = domain_name
     )
   } else {
     report_df1 <- NULL
   }
-
   return(report_df1)
 }

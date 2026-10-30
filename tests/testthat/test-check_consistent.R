@@ -71,9 +71,9 @@ df_single_per_group <- data.frame(
 # ---- Tests ----
 test_that("SD1043: catches inconsistent --TESTCD values within --TEST", {
   expected_error <- data.frame(
-    Row = "1, 2",
+    Row = c("1", "2"),
     Variable = "LBTESTCD",
-    Original_Value = "ALT | ALANINE",
+    Original_Value = c("ALT","ALANINE"),
     Rule_ID = "SD1043",
     Message = "Value is not consistent within LBTEST.",
     stringsAsFactors = FALSE
@@ -86,7 +86,7 @@ test_that("SD1043: catches inconsistent --TESTCD values within --TEST", {
     rule_id = "SD1043"
   )
   expect_s3_class(res, "data.frame")
-  expect_equal(nrow(res), 1)
+  expect_equal(nrow(res), 2)
   expect_equal(res$Row, expected_error$Row)
   expect_equal(res$Variable, expected_error$Variable)
   expect_equal(res$Original_Value, expected_error$Original_Value)
@@ -109,9 +109,9 @@ test_that("SD1043: returns NULL when --TESTCD is consistent within --TEST", {
 
 test_that("SD0086: catches inconsistent values within multi-column parent groups", {
   expected_error <- data.frame(
-    Row = "1, 2",
+    Row = c("1", "2"),
     Variable = "QVAL",
-    Original_Value = "Asian | Chinese",
+    Original_Value = c("Asian","Chinese"),
     Rule_ID = "SD0086",
     Message = "Value is not consistent within STUDYID, USUBJID, IDVAR, IDVARVAL, QNAM.",
     stringsAsFactors = FALSE
@@ -124,7 +124,7 @@ test_that("SD0086: catches inconsistent values within multi-column parent groups
     rule_id = "SD0086"
   )
   expect_s3_class(res, "data.frame")
-  expect_equal(nrow(res), 1)
+  expect_equal(nrow(res), 2)
   expect_equal(res$Row, expected_error$Row)
   expect_equal(res$Variable, expected_error$Variable)
   expect_equal(res$Original_Value, expected_error$Original_Value)
@@ -147,9 +147,9 @@ test_that("SD0086: returns NULL when target is consistent across all parent grou
 
 test_that("SD1236: catches inconsistent --prefixed variables within specified groups", {
   expected_error <- data.frame(
-    Row = "1, 2",
+    Row = c("1", "2"),
     Variable = "DELOC",
-    Original_Value = "Left Arm | Right Arm",
+    Original_Value = c("Left Arm", "Right Arm"),
     Rule_ID = "SD1236",
     Message = "Value is not consistent within SPDEVID, USUBJID.",
     stringsAsFactors = FALSE
@@ -162,7 +162,7 @@ test_that("SD1236: catches inconsistent --prefixed variables within specified gr
     rule_id = "SD1236"
   )
   expect_s3_class(res, "data.frame")
-  expect_equal(nrow(res), 1)
+  expect_equal(nrow(res), 2)
   expect_equal(res$Row, expected_error$Row)
   expect_equal(res$Variable, expected_error$Variable)
   expect_equal(res$Original_Value, expected_error$Original_Value)

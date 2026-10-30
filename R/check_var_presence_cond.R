@@ -82,11 +82,12 @@ check_var_presence_cond <- function(df, domain_name, target_vars, cond_vars, con
     error_msg <- sprintf("Variable presence logic violation for: %s", paste(missing_vars, collapse=", "))
     
     report_df <- report_error(
-      row_number = NA_character_,
+      row_number = "-",
       variable_name = paste(target_vars, collapse = ", "),
-      original_value = NA_character_,
+      original_value = "-",
       rule_id = rule_id,
-      error_message = error_msg
+      error_message = error_msg,
+      domain_name   = domain_name
     )
     return(report_df)
   }

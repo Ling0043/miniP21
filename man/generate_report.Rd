@@ -4,12 +4,10 @@
 \alias{generate_report}
 \title{generate a html report}
 \usage{
-generate_report(report_df, domain_name, output_dir = getwd())
+generate_report(report_df, output_dir = getwd())
 }
 \arguments{
 \item{report_df}{a data.frame of all errors detail}
-
-\item{domain_name}{the domain of the dataset}
 
 \item{output_dir}{the directory to save the report, default is current working directory}
 }

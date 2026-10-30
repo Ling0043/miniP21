@@ -40,17 +40,18 @@ check_sd0002 <- function(df, domain_name, ...) {
 
   # 3. Pre-processing ----
   req_meta <- sdtm_v34 %>% filter(dataset_name == domain_name &
-                                     core == "Req")
+                                  core == "Req")
   req_vars <- req_meta$variable_name
+
   # if this domain have no "Req" variable, then end function
   if (length(req_vars) == 0) {
-    # return(report_error("-", "Pass", "SD0002", "No Required variables defined for this domain."))
     return(NULL)
   }
   vars_to_check <- intersect(req_vars, names(df))
 
   # 4. Core logic ----
   all_errors <- list()
+
   for (var in vars_to_check) {
     err_idx <- which(is.na(df[[var]]) |
                        trimws(as.character(df[[var]])) == "")
@@ -63,7 +64,8 @@ check_sd0002 <- function(df, domain_name, ...) {
           variable_name = var,
           original_value = "-",
           rule_id = "SD0002",
-          error_message = sprintf("Required variable '%s' is null or empty.", var)
+          error_message = sprintf("Required variable '%s' is null or empty.", var),
+          domain_name   = domain_name
         )
       }
     }

@@ -3,6 +3,18 @@
 \name{check_compare_vars}
 \alias{check_compare_vars}
 \title{Check relationship between two variables}
+\usage{
+check_compare_vars(
+  df,
+  domain_name,
+  var1,
+  var2,
+  relation = "not_equal",
+  rule_id,
+  check_na = FALSE,
+  ...
+)
+}
 \arguments{
 \item{df}{Data frame to check.}
 

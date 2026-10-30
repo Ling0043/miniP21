@@ -81,6 +81,7 @@ check_missing_cond <- function(df, domain_name, target_vars, cond_vars = NULL, c
         non_missing = !is.na(x) & x != "",
         missing     = is.na(x) | x == "",
         equal       = !is.na(x) & x == val,
+        not_equal   = !is.na(x) & x != val,
         not_in = {
           # parse exclusion list, allowing __MISSING__ token
           excl <- trimws(unlist(strsplit(val, ",", fixed = TRUE)))
@@ -129,6 +130,7 @@ check_missing_cond <- function(df, domain_name, target_vars, cond_vars = NULL, c
         non_missing = paste0(var, " is provided"),
         missing     = paste0(var, " is missing"),
         equal       = paste0(var, "='", val, "'"),
+        not_equal   = paste0(var, "!='", val, "'"),
         not_in = {
           excl <- trimws(unlist(strsplit(val, ",", fixed = TRUE)))
           excl_clean <- setdiff(excl, "__MISSING__")
@@ -182,7 +184,8 @@ check_missing_cond <- function(df, domain_name, target_vars, cond_vars = NULL, c
     variable_name = target_vars,
     original_value = original_value,
     rule_id       = rule_id,
-    error_message = error_message
+    error_message = error_message,
+    domain_name   = domain_name
   )
 
   return(report_df)

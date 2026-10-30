@@ -9,7 +9,7 @@ check_date_logic(df, domain_name, target_vars, rule_id, operator, ...)
 \arguments{
 \item{df}{domain dataset to check}
 
-\item{domain_name}{the domain name, used to replace "--" in target_vars with the actual domain code}
+\item{domain_name}{the name of the domain}
 
 \item{target_vars}{a character vector of two variable names containing "--" placeholders, e.g., "--STDTC, --ENDTC"}
 

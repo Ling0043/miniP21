@@ -5,7 +5,7 @@
 #' @description SD0013、SD0025、SD1002、SD1331、SD1334、SD1335
 #'
 #' @param df domain dataset to check
-#' @param domain_name the domain name, used to replace "--" in target_vars with the actual domain code
+#' @param domain_name the name of the domain
 #' @param target_vars a character vector of two variable names containing "--" placeholders, e.g., "--STDTC, --ENDTC"
 #' @param rule_id the rule id to check
 #' @param operator comparison operator: one of "<", "<=", ">", ">="
@@ -98,7 +98,8 @@ check_date_logic <- function(df, domain_name, target_vars, rule_id, operator, ..
         variable_name = paste(var1, "vs", var2),
         original_value = paste(d1_valid[err_pos], "vs", d2_valid[err_pos]),
         rule_id = rule_id,
-        error_message = sprintf("Value of %s must be %s %s.", var1, operator, var2)
+        error_message = sprintf("Value of %s must be %s %s.", var1, operator, var2),
+        domain_name = domain_name
       )
       all_reports[[length(all_reports) + 1]] <- pair_report
     }
@@ -107,3 +108,4 @@ check_date_logic <- function(df, domain_name, target_vars, rule_id, operator, ..
   if (length(all_reports) == 0) return(NULL)
   return(dplyr::bind_rows(all_reports))
 }
+

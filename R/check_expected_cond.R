@@ -75,7 +75,7 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
                non_missing = !is.na(x) & x != "",
                missing     = is.na(x) | x == "",
                equal       = !is.na(x) & x == val,
-               not_equal   = is.na(x) | x != val,
+               not_equal   = !is.na(x) & x != val,
                not_in = {
                  excl <- trimws(unlist(strsplit(val, ",", fixed = TRUE)))
                  if ("__MISSING__" %in% excl) {
@@ -183,7 +183,8 @@ check_expected_cond <- function(df, domain_name, target_vars, rule_id,
       variable_name  = variable_name_str,
       original_value = as.character(err_df$orig_val),
       rule_id        = rule_id,
-      error_message  = error_msg
+      error_message  = error_msg,
+      domain_name   = domain_name
     )
     
     return(report_df)

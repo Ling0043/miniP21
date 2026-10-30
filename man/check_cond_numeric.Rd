@@ -3,6 +3,18 @@
 \name{check_cond_numeric}
 \alias{check_cond_numeric}
 \title{Check if a variable is numeric under specific conditions}
+\usage{
+check_cond_numeric(
+  df,
+  domain_name,
+  target_vars,
+  rule_id,
+  cond_var,
+  cond_val = NULL,
+  allow_prefix = FALSE,
+  ...
+)
+}
 \arguments{
 \item{df}{Data frame to check.}
 

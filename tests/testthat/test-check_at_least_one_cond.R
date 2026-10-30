@@ -409,7 +409,7 @@ test_that("SD1121: returns NULL when non-exception ARMCD has AGE populated", {
 
 test_that("SD1121: reports multiple error rows for non-exception arms", {
   expected_error <- data.frame(
-    Row = "1, 2",
+    Row = c("1", "2"),
     Variable = "AGE, AGETXT",
     Original_Value = "",
     Rule_ID = "SD1121",
@@ -428,7 +428,7 @@ test_that("SD1121: reports multiple error rows for non-exception arms", {
     expected_val = NULL
   )
   expect_s3_class(res, "data.frame")
-  expect_equal(nrow(res), 1)
+  expect_equal(nrow(res), 2)
   expect_equal(res$Row, expected_error$Row)
   expect_equal(res$Message, expected_error$Message)
 })

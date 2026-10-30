@@ -3,11 +3,16 @@
 \name{fct_get_rules}
 \alias{fct_get_rules}
 \title{get the rule from P21}
+\usage{
+fct_get_rules(domain_name, type = NULL)
+}
 \arguments{
 \item{domain_name}{the name of the domain dataset, should be a character of two uppercase letters}
+
+\item{type}{the type of rules to retrieve, either "single" or "multi"}
 }
 \value{
-rule code
+a data frame containing the rules for the specified domain and type
 }
 \description{
 Extract the relevant rules from Pinnacle 21

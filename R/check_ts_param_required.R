@@ -8,6 +8,7 @@
 #'   parameter equals a specific value. Used for rules SD2223 to SD2287.
 #'
 #' @param df A data frame containing the domain data to check.
+#' @param domain_name Character string. Name of the domain (e.g., "TS").
 #' @param target_vars Character string. Name of the column containing parameter 
 #'   codes (e.g., "TSPARMCD").
 #' @param param_code Character string. The specific parameter code that must 
@@ -41,7 +42,7 @@
 #
 # =============================================================================
 
-check_ts_param_required <- function(df, target_vars, param_code, cond_param = NULL, cond_val = NULL, val_var = "TSVAL", rule_id, ...) {
+check_ts_param_required <- function(df, domain_name, target_vars, param_code, cond_param = NULL, cond_val = NULL, val_var = "TSVAL", rule_id, ...) {
   # 1. Pre-processing ----
   if (!target_vars %in% names(df) || !val_var %in% names(df)) {
     return(NULL)
@@ -56,12 +57,17 @@ check_ts_param_required <- function(df, target_vars, param_code, cond_param = NU
       return(NULL)
     }
   }
-  
+
   # 2. Core logic ----
   has_param <- param_code %in% df[[target_vars]]
   param_vals <- if (has_param) df[[val_var]][df[[target_vars]] == param_code] else NULL
   
   is_missing_or_empty <- !has_param || all(is.na(param_vals) | trimws(param_vals) == "")
+  error_message <- sprintf("Missing required %s parameter '%s' in TS domain", target_vars, param_code)
+
+  if (rule_id == "SD1306" && !is_missing_or_empty) {
+     error_message <- "TSVAL should be null when TSPARMCD = 'TDIGRP' or no record for this parameter should be created in TS domain."
+  }
   
   if (is_missing_or_empty) {
     report_df <- report_error(
@@ -69,11 +75,11 @@ check_ts_param_required <- function(df, target_vars, param_code, cond_param = NU
       variable_name = target_vars,
       original_value = NA_character_,
       rule_id = rule_id,
-      error_message = sprintf("Missing required %s parameter '%s' in TS domain", target_vars, param_code)
+      error_message = error_message,
+      domain_name   = domain_name
     )
     return(report_df)
   }
   
   return(NULL)
 }
-

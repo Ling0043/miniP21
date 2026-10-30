@@ -6,6 +6,7 @@
 \usage{
 check_ts_param_required(
   df,
+  domain_name,
   target_vars,
   param_code,
   cond_param = NULL,
@@ -17,6 +18,8 @@ check_ts_param_required(
 }
 \arguments{
 \item{df}{A data frame containing the domain data to check.}
+
+\item{domain_name}{Character string. Name of the domain (e.g., "TS").}
 
 \item{target_vars}{Character string. Name of the column containing parameter
 codes (e.g., "TSPARMCD").}

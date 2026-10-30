@@ -6,7 +6,6 @@
 #'     cannot be null for any records.
 #'
 #' @param report_df a data.frame of all errors detail
-#' @param domain_name the domain of the dataset
 #' @param output_dir the directory to save the report, default is current working directory
 #' 
 #' @return a html report
@@ -27,7 +26,7 @@
 # =============================================================================
 
 
-generate_report <- function(report_df, domain_name, output_dir = getwd()) {
+generate_report <- function(report_df, output_dir = "F:/intern2/project_R_sdtm/test_report") {
   template_path <- system.file("report_template.Rmd", package = "miniP21")
   
   # ⭐⭐⭐just for me!!!!!⭐⭐⭐
@@ -39,16 +38,15 @@ generate_report <- function(report_df, domain_name, output_dir = getwd()) {
     stop("The report template 'report_template.Rmd' cannot be found! Please ensure it is placed in the 'inst/' directory.")
   }
 
-  timestamp <- format(Sys.Date(), "%Y%m%d")
-  output_file <- paste0(domain_name, "_P21_Report_", timestamp, ".html")
+  timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
+  output_file <- paste0("P21_Report_", timestamp, ".html")
   output_path <- file.path(output_dir, output_file)
 
   rmarkdown::render(
     input = template_path,
     output_file = output_path,
     params = list(
-      report_data = report_df,
-      domain_name = domain_name
+      report_data = report_df
     ),
     envir = new.env(),
     quiet = TRUE
@@ -61,3 +59,4 @@ generate_report <- function(report_df, domain_name, output_dir = getwd()) {
   }
   return(invisible(output_path))
 }
+

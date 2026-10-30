@@ -34,7 +34,7 @@ test_that("check_sd1022 return null(all pass)", {
   QEVAL = c("", "ADJUDICATION", "", "", "", "")
 )
 
-  res_clean <- check_sd1022(suppqual, "SUPPQUAL")
+  res_clean <- check_sd1022(suppqual, domain_name = "SUPPQUAL", target_vars = "QNAM", rule_id = "SD1022")
   expect_null(res_clean)
 })
 
@@ -75,7 +75,7 @@ test_that("check_sd1022 return 1 error", {
     stringsAsFactors = FALSE
   )
 
-  res_error <- check_sd1022(suppqual, "SUPPQUAL")
+  res_error <- check_sd1022(suppqual, domain_name = "SUPPQUAL", target_vars = "QNAM", rule_id = "SD1022")
   expect_equal(nrow(res_error), 2)
   expect_equal(res_error$Row, expected_error$Row)
   expect_equal(res_error$Variable, expected_error$Variable)

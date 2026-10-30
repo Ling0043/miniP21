@@ -4,7 +4,7 @@
 \alias{check_sd1064}
 \title{check duplicate ETCD value}
 \usage{
-check_sd1064(df, ...)
+check_sd1064(df, domain_name, ...)
 }
 \arguments{
 \item{df}{domain dataset to check}

@@ -87,7 +87,9 @@ check_sd0003 <- function(df, ...) {
           error_message = sprintf(
             "Value '%s' of variable '%s' does not conform to ISO 8601 format.",
             orig_value, var
-          ))
+          ),
+          domain_name   = domain_name
+        )
       }
     }
 

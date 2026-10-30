@@ -54,13 +54,14 @@
 
 check_be_null_cond <- function(df, domain_name, target_vars, cond_vars, cond_ops, cond_vals,
                                logic_op = "AND", rule_id, ...) {
+
   # ---- Existence checks ----
   if (any(grepl("^--", target_vars))) {
     target_vars <- gsub("^--", domain_name, target_vars)
     cond_vars <- gsub("^--", domain_name, cond_vars)
   }
 
-  if (!all(cond_vars %in% names(df)) || !target_vars %in% names(df)) {
+  if (!all(cond_vars %in% names(df)) || !all(target_vars %in% names(df))) {
     return(NULL)
   }
 
@@ -102,11 +103,23 @@ check_be_null_cond <- function(df, domain_name, target_vars, cond_vars, cond_ops
   }
 
   # ---- Check that target variable IS missing ----
-  target_vals <- df[[target_vars]][combined_idx]
-  is_not_missing <- !is.na(target_vals) & as.character(target_vals) != ""
-  error_positions <- which(is_not_missing)
-
-  if (length(error_positions) == 0) {
+  # 3. Core logic: Check All Missing ----
+  # For rows meeting the condition, check if ANY target variable is populated
+  # Error occurs if condition is met AND any target is NOT missing
+  check_matrix <- sapply(target_vars, function(v) {
+    col_data <- df[[v]]
+    is.na(col_data) | trimws(as.character(col_data)) == ""
+  })
+  
+  if (is.null(dim(check_matrix))) {
+    check_matrix <- matrix(check_matrix, ncol = 1)
+  }
+  
+  # Rows where at least one target is populated (i.e., not all are missing)
+  any_populated <- apply(check_matrix, 1, function(row) !all(row))
+  err_idx <- which(combined_idx & any_populated)
+  
+  if (length(err_idx) == 0) {
     return(NULL)
   }
 
@@ -140,20 +153,20 @@ check_be_null_cond <- function(df, domain_name, target_vars, cond_vars, cond_ops
 
   connector <- if (logic_op == "OR") " or " else " and "
   cond_str <- paste(cond_descs, collapse = connector)
+  report_vars <- paste(target_vars, collapse = ", ")
 
-  error_message <- sprintf("Value of %s must be null when %s",
-                           target_vars, cond_str)
+  error_message <- sprintf("Value of ( %s ) must be null when %s",
+                           paste(report_vars, collapse = ", "), cond_str)
 
   # ---- Report errors ----
-  idx <- which(combined_idx)[error_positions]
-  original_value <- as.character(df[[target_vars]][idx])
 
   report_df <- report_error(
-    row_number    = as.character(idx),
-    variable_name = target_vars,
-    original_value = original_value,
+    row_number    = as.character(err_idx),
+    variable_name = report_vars,
+    original_value = " ",
     rule_id       = rule_id,
-    error_message = error_message
+    error_message = error_message,
+    domain_name    = domain_name
   )
 
   return(report_df)
